@@ -41,7 +41,7 @@ class EventBase:
         _tracking_events.append((self, fn))
 
     @classmethod
-    def _trigger(cls, fn: callable) -> callable:
+    def trigger(cls, fn: callable) -> callable:
         def trigger_wrapper(*args, **kwargs):
             # trigger event here
             def check_events(event: tuple[EventBase, callable]):

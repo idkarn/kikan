@@ -16,15 +16,14 @@ def loop(fps=30):
 """
 
 from kikan.engine import Loop, Engine
-from kikan.events import InitEvent, CreationEvent
+from kikan.events import InitEvent
+
+counter = 0
 
 
 @InitEvent
 def init():
     print("Successfully init")
-
-
-counter = 0
 
 
 def update():
@@ -34,7 +33,7 @@ def update():
 
 
 @Loop
-def loop(fps=0.25):
+def loop(fps=1):
     update()
 
 
