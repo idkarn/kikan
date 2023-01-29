@@ -20,20 +20,33 @@ def run(file_name):
         print(e.with_traceback(e.__traceback__))
 
 
+def find_last(root_path: str, skip_paths: list[str]) -> int:
+    mtime = 0
+    for current_path, dirs, files in os.walk(root_path):
+        for file in files:
+            mtime = max(os.path.getmtime(
+                os.path.join(current_path, file)), mtime)
+        for dir in dirs.copy():
+            if dir.startswith(".") or dir in skip_paths:
+                dirs.remove(dir)
+    return mtime
+
+
 def main():
     if len(argv) < 2:
         print("Please pass the name of the file to be monitored")
         exit()
 
-    file_name = argv[1]
+    root_path = os.getcwd()  # TODO: turn to optional cli argument
+    main_file = argv[1]
+    skip_paths = argv[2].split(",") if len(argv) > 2 else []
     last_mtime = 0
 
     while True:
-        mtime = os.path.getmtime(f"{os.getcwd()}/{file_name}")
+        mtime = find_last(root_path, skip_paths)
         if mtime > last_mtime:
             last_mtime = mtime
-            run(file_name)
-
+            run(main_file)
         sleep(INTERVAL)
 
 
