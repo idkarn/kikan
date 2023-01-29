@@ -1,8 +1,6 @@
 import curses
 from math import cos, sin
-from typing import Iterator, Tuple
-from maths import Matrix
-from maths import Edge, Vertex, get_line_coords
+from .math import Matrix, Vertex, get_line_coords
 from os import get_terminal_size
 
 

@@ -1,6 +1,6 @@
 import curses
-from engine import Engine
-from utils import LaunchError
+from .engine import Engine
+from .utils import LaunchError
 
 
 def main():
