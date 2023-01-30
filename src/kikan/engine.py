@@ -2,7 +2,9 @@ from dataclasses import dataclass
 import inspect
 from .events import InitEvent
 from .utils import LaunchError
+from .screen import Screen
 from time import sleep
+from blessed import Terminal
 
 loop = None  # TODO: replace global variable to other stuff
 
@@ -14,20 +16,20 @@ class EngineConfig:
 
 class Engine:
     def __init__(self) -> None:
-        # self.scr = Screen()
         ...
 
-    @classmethod
-    def start(cls) -> None:
-        global eng
-        eng = cls()
-        eng._launch()
+    def start(self) -> None:
+        term = Terminal()
+        with term.fullscreen(), term.cbreak(), term.hidden_cursor():
+            self.scr = Screen(term)
+            self._launch()
 
     @InitEvent.trigger
     def _launch(self) -> LaunchError:
+        def internal_loop():
+            self.scr.clear()
         try:
-            print(loop.config)
-            loop._loop()
+            loop._loop(internal_loop)
         except Exception:
             raise LaunchError
 
@@ -44,8 +46,9 @@ class Loop:
         self.config = EngineConfig(**args)
         loop = self
 
-    def _loop(self):
+    def _loop(self, internal_loop: callable) -> None:
         while True:
             if self.config.fps > 0:
                 sleep(1 / self.config.fps)
+            internal_loop()
             self.user_loop()

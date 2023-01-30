@@ -1,40 +1,32 @@
-"""
-Example code of using game engine
+from kikan.engine import Engine, Loop
+from kikan.events import InitEvent, Input
+from kikan.entity import Entity
 
-from kikan.engine import Loop
-from kikan.events import InitEvent
+eng = Engine()
 
-@InitEvent
-def init(once, name="test"): # event takes args from function params
-  print("Successfully init")
 
-entity = ...
-
-@Loop
-def loop(fps=30):
-  entity.upd()
-"""
-
-from kikan.engine import Loop, Engine
-from kikan.events import InitEvent
-
-counter = 0
+class Player(Entity):
+    ...
 
 
 @InitEvent
 def init():
-    print("Successfully init")
+    player = Player()
+    print("[INIT] Success")
 
 
-def update():
-    global counter
-    counter += 1
-    print("log", counter)
+i = -10
 
 
 @Loop
 def loop(fps=1):
-    update()
+
+    eng.scr.display_symbol(i, i, eng.scr.get_key() or "0")
 
 
-Engine.start()
+@Input
+def input(key="a"):
+    print("handled")
+
+
+eng.start()
