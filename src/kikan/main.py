@@ -1,4 +1,3 @@
-import curses
 from .engine import Engine
 from .utils import LaunchError
 
@@ -8,7 +7,6 @@ def main():
     try:
         eng.start()
     except LaunchError:
-        curses.endwin()
         print("start failed")
 
 
