@@ -1,22 +1,26 @@
 from dataclasses import dataclass
 import inspect
 
-from .events import InitEvent
 from .utils import LaunchError
 from .screen import Screen
 from time import sleep
 from blessed import Terminal
-from .events import _tracking_events, EventBase, Input
+from .events import InitEvent, EventBase, Input, CollisionEvent, _tracking_events
+from .entity import Entity, entities
 
 loop = None  # TODO: replace global variable to other stuff
-entities = []
+
 
 @dataclass
 class EngineConfig:
     fps: float
 
+
 class Engine:
     def __init__(self) -> None:
+        ...
+
+    def init(self) -> None:  # start engine init phase to create all necessary objects
         ...
 
     def start(self) -> None:
@@ -32,14 +36,25 @@ class Engine:
             listener: tuple[EventBase, callable]
             event = listener[0]
             if isinstance(event, Input):
-                if event.args["key"] == key:
+                if event._args["key"] == key:
                     listener[1]()
+
+    def _check_collision(self):
+        for listener in _tracking_events:
+            listener: tuple[EventBase, callable]
+            event, fn = listener
+            if isinstance(event, CollisionEvent):
+                for entity in entities:
+                    entity: Entity
+                    if fn._self.pos == entity.pos and entity is not fn._self:
+                        fn(fn._self)
 
     @InitEvent.trigger
     def _launch(self) -> LaunchError:
         def internal_loop():
-            self.scr.clear() # clear screen
-            self._check_input() # check if any key is down
+            self.scr.clear()  # clear screen
+            self._check_input()  # check if any key is down
+            self._check_collision()  # check for all collisions
         try:
             loop._loop(internal_loop)
         except Exception:

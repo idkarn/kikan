@@ -1,3 +1,6 @@
+empty:
+	
+
 clean:
 	rm -rf dist
 
@@ -6,3 +9,9 @@ run:
 
 watch:
 	python3 monitor.py tests/test.py __pycache__,dist
+
+build:
+	python3 -m build
+
+publish:	
+	python3 -m twine upload dist/*

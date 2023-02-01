@@ -1,8 +1,14 @@
+from dataclasses import dataclass
 from typing import Iterator, Tuple
 from math import copysign
 
 
-class Vertex:
+@dataclass
+class Vertex:  # find out why int instead of float
+    x: int
+    y: int
+    z: int
+
     def __init__(self, x: float, y: float, z: float = 0) -> None:
         self.x, self.y, self.z = int(x), int(y), int(z)
 

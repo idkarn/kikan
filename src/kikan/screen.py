@@ -15,6 +15,7 @@ class Screen:
             "width": term_size.columns
         }
 
+    # probably must be private for internal usage only
     def render(self, data: str):
         print(data, end='', flush=True)
 
@@ -26,10 +27,10 @@ class Screen:
             # print(x, y)
             # translate x, y from a center to the curses coords system
             x, y = self.size["width"] // 2 + x, self.size["height"] // 2 - y
-            print(self.scr.move_x(x) + self.scr.move_y(y) +
-                  symbol + self.scr.color_rgb(*color))
+            self.render(self.scr.color_rgb(*color) + self.scr.move_x(x) + self.scr.move_y(y) +
+                        symbol)
 
-    # TODO: make color args more convenient (optional) 
+    # TODO: make color args more convenient (make it optional)
 
     def draw_line(self, x1: int, y1: int, x2: int, y2: int, symb: str = "*", color: tuple[int, int, int] = (255, 255, 255)) -> None:
         for x, y in get_line_coords(x1, y1, x2, y2):
@@ -39,7 +40,7 @@ class Screen:
         return self.scr.inkey(self.delay).lower()
 
     def clear(self) -> None:
-        print(self.scr.home + self.scr.clear)
+        self.render(self.scr.home + self.scr.clear)
 
     def draw_wireframe(self, vertexes: list[Vertex], edges: list, angle: float, scale: int = 1, color: tuple[int, int, int] = (255, 255, 255)) -> None:
         rotation = [

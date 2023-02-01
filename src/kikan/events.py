@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import inspect
+from .entity import Entity
 
 
 _events_index = {}
@@ -29,12 +30,21 @@ class EventBase:
         "Internal using only"
     )
 
+    def __set_name__(self, owner, name):
+        setattr(owner, name, self.__wrapped_method)
+
+        # remove "self" param from event arguments
+        del self._args["self"]
+
     def __init__(self, fn: callable) -> None:
-        self.args = {}
-        func_params = inspect.signature(fn).parameters
-        for i in func_params.values():
+        self.__wrapped_method = fn
+        self._args = {}
+        func_params = inspect.signature(fn).parameters.values()
+
+        for i in func_params:
             i: inspect.Parameter
-            self.args[i.name] = True if i.default is i.empty else i.default
+            self._args[i.name] = True if i.default is i.empty else i.default
+
         self._handle(fn)
 
     def _handle(self, fn: callable) -> None:
@@ -63,8 +73,22 @@ class InitEvent(EventBase):
     )
 
 
+class Input(EventBase):
+    TYPE = EventType(
+        "InputEvent",
+        "Event triggered when the key is pressed"
+    )
+
+
 class CreationEvent(EventBase):
     TYPE = EventType(
         "CreationEvent",
         "Event triggered when the entity is created"
+    )
+
+
+class CollisionEvent(EventBase):
+    TYPE = EventType(
+        "CollisionEvent",
+        "Event triggered when the entity collides with another entity"
     )
