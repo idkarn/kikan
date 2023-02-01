@@ -40,7 +40,7 @@ def player_create():
 
 
 @InitEvent
-def init():
+def init():  # start point of the game
     global player, gem
     player = Player(Vertex(0, 0), "@")
     gem = Gem(Vertex(2, 2), "*")
@@ -48,10 +48,12 @@ def init():
 
 
 @Loop
-def loop(fps=10):
+def loop(fps=10):  # main game loop
     eng.scr.draw(gem)
     eng.scr.draw(player)
     print_score()
+
+# *** keyboard inputs ***
 
 
 @Input

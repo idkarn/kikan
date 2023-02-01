@@ -14,7 +14,7 @@ classifiers = [
 description = "TUI-based game engine"
 name = "kikan"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 version = "0.0.2"
 
 dependencies = [
