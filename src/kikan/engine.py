@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import inspect
 
-from .utils import LaunchError
+from .errors import LaunchError
 from .screen import Screen
 from time import sleep
 from blessed import Terminal

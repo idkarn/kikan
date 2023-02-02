@@ -1,5 +1,5 @@
 from .engine import Engine
-from .utils import LaunchError
+from .errors import LaunchError
 
 
 def main():
