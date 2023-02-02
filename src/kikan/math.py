@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 from typing import Iterator, Tuple
-from math import copysign
+import math
 
 
+# arithmetic operations from https://github.com/philiprbrenan/Vector2/blob/master/Vector2.py
 @dataclass
-class Vertex:  # find out why int instead of float
+class Vertex:  # must be interger because of screen coordinates
     x: int
     y: int
     z: int
@@ -24,25 +25,88 @@ class Vertex:  # find out why int instead of float
             [self.z]
         ]
 
+    def get_length(self):
+        """Length of a vector"""
+        return (self.x**2 + self.y**2) ** 0.5
 
+    def normalize(self):
+        """Normalize a vector"""
+        l = self.get_length()
+        return self / l if l else self
+
+    def dot(self, other):
+        """Dot product of two vectors"""
+        products = [s * o for s,
+                    o in zip(self._get_coords(), other._get_coords())]
+        dot_sum = sum(products)
+        return dot_sum
+
+    def _get_coords(self):
+        return (self.x, self.y, self.z)
+
+    def __add__(self, other):
+        """Add the second vector to a copy of the first vector"""
+        coords = [s + o for s, o in zip(
+            self._get_coords(), other._get_coords())]
+        new_vertex = Vertex(*coords)
+        return new_vertex
+
+    def __sub__(self, other):
+        """Subtract the second vector from a copy of the first vector"""
+        coords = [s - o for s, o in zip(
+            self._get_coords(), other._get_coords())]
+        new_vertex = Vertex(*coords)
+        return new_vertex
+
+    def __mul__(self, n: float):
+        """Multiply a copy of vector by a scalar"""
+        coords = [i * n for i in self._get_coords()]
+        new_vertex = Vertex(*coords)
+        return new_vertex
+
+    def __truediv__(self, n: float):
+        """Divide a copy of a vector by a scalar"""
+        coords = [i / n for i in self._get_coords()]
+        new_vertex = Vertex(*coords)
+        return new_vertex
+
+    def __floordiv__(self, n: float):
+        """Same as a true div"""
+        return self / n
+
+    def __abs__(self):
+        """Length of a vector"""
+        return self.get_length()
+
+    def __len__(self):
+        """Length of a vector"""
+        return self.get_length()
+
+    def __neg__(self):
+        """Rotate a copy of a vector by 180 degrees"""
+        coords = [-i for i in self._get_coords()]
+        new_vertex = Vertex(*coords)
+        return new_vertex
+
+
+#! DEPRECATED
 class Edge:
     def __init__(self, start: Vertex, end: Vertex) -> None:
         self.start, self.end = start, end
 
 
 class Matrix:
-    @staticmethod
+    @ staticmethod
     def multiply(a: list[list], b: list[list]) -> list[list]:
         return [[sum(a * b for a, b in zip(A_row, B_col))
                  for B_col in zip(*b)] for A_row in a]
 
 
-def sign(n: int) -> -1 or 0 or 1:
-    return int(copysign(1, n)) if n != 0 else 0
-
-
 # algorithm from https://www.uobabylon.edu.iq/eprints/publication_2_22893_6215.pdf
 def get_line_coords(x1: int, y1: int, x2: int, y2: int) -> Iterator[Tuple[int, int]]:
+    def sign(n: int) -> -1 or 0 or 1:
+        return int(math.copysign(1, n)) if n != 0 else 0
+
     x, y = x1, y1
     dx, dy = abs(x2 - x1), abs(y2 - y1)
     sx, sy = sign(x2 - x1), sign(y2 - y1)
