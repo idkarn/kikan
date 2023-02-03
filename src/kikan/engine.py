@@ -62,16 +62,13 @@ class Engine:
 
 
 class Loop:
-    def __init__(self, func: callable) -> None:
+    def __init__(self, **kwargs: any) -> None:
         global loop
-        args = {}
-        func_params = inspect.signature(func).parameters
-        for i in func_params.values():
-            i: inspect.Parameter
-            args[i.name] = True if i.default is i.empty else i.default
-        self.user_loop = func  # main loop function placeholder
-        self.config = EngineConfig(**args)
+        self.config = EngineConfig(**kwargs)
         loop = self
+
+    def __call__(self, fn: callable) -> any:
+        self.user_loop = fn
 
     def _loop(self, internal_loop: callable) -> None:
         while True:

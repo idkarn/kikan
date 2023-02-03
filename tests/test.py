@@ -47,8 +47,8 @@ def init():  # start point of the game
     print("[INIT] Success")
 
 
-@Loop
-def loop(fps=10):  # main game loop
+@Loop(fps=5)
+def loop():  # main game loop
     eng.scr.draw(gem)
     eng.scr.draw(player)
     print_score()
@@ -56,23 +56,23 @@ def loop(fps=10):  # main game loop
 # *** keyboard inputs ***
 
 
-@Input
-def inputD(key="d"):
+@Input(key="d")
+def inputD():
     player.pos.x += 1
 
 
-@Input
-def inputA(key="a"):
+@Input(key="a")
+def inputA():
     player.pos.x -= 1
 
 
-@Input
-def inputW(key="w"):
+@Input(key="w")
+def inputW():
     player.pos.y += 1
 
 
-@Input
-def inputS(key="s"):
+@Input(key="s")
+def inputS():
     player.pos.y -= 1
 
 

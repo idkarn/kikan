@@ -96,7 +96,7 @@ class Edge:
 
 
 class Matrix:
-    @ staticmethod
+    @staticmethod
     def multiply(a: list[list], b: list[list]) -> list[list]:
         return [[sum(a * b for a, b in zip(A_row, B_col))
                  for B_col in zip(*b)] for A_row in a]
