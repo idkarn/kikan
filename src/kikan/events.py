@@ -33,19 +33,17 @@ class EventBase:
     def __set_name__(self, owner, name):
         setattr(owner, name, self.__wrapped_method)
 
-        # remove "self" param from event arguments
-        del self._args["self"]
+    def __init__(self, *args: list[callable], **kwargs: any) -> None:
+        if len(args) > 1:
+            raise ValueError()
+        elif len(args) == 1 and inspect.isfunction(args[0]):
+            self.__wrapped_method = args[0]
+            self._handle(args[0])
+        self._args = kwargs
 
-    def __init__(self, fn: callable) -> None:
-        self.__wrapped_method = fn
-        self._args = {}
-        func_params = inspect.signature(fn).parameters.values()
-
-        for i in func_params:
-            i: inspect.Parameter
-            self._args[i.name] = True if i.default is i.empty else i.default
-
+    def __call__(self, fn: callable) -> any:
         self._handle(fn)
+        return fn
 
     def _handle(self, fn: callable) -> None:
         _tracking_events.append((self, fn))
