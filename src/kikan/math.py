@@ -5,7 +5,7 @@ import math
 
 # arithmetic operations from https://github.com/philiprbrenan/Vector2/blob/master/Vector2.py
 @dataclass
-class Vertex:  # must be interger because of screen coordinates
+class Vector:  # must be interger because of screen coordinates
     x: int
     y: int
     z: int
@@ -16,7 +16,7 @@ class Vertex:  # must be interger because of screen coordinates
     def get_projection(self, scale: int):
         x_proj = (scale * self.x) // (self.z + scale + 50)
         y_proj = (scale * self.y) // (self.z + scale + 50)
-        return Vertex(x_proj, y_proj)
+        return Vector(x_proj, y_proj)
 
     def to_matrix(self):
         return [
@@ -48,26 +48,26 @@ class Vertex:  # must be interger because of screen coordinates
         """Add the second vector to a copy of the first vector"""
         coords = [s + o for s, o in zip(
             self._get_coords(), other._get_coords())]
-        new_vertex = Vertex(*coords)
+        new_vertex = Vector(*coords)
         return new_vertex
 
     def __sub__(self, other):
         """Subtract the second vector from a copy of the first vector"""
         coords = [s - o for s, o in zip(
             self._get_coords(), other._get_coords())]
-        new_vertex = Vertex(*coords)
+        new_vertex = Vector(*coords)
         return new_vertex
 
     def __mul__(self, n: float):
         """Multiply a copy of vector by a scalar"""
         coords = [i * n for i in self._get_coords()]
-        new_vertex = Vertex(*coords)
+        new_vertex = Vector(*coords)
         return new_vertex
 
     def __truediv__(self, n: float):
         """Divide a copy of a vector by a scalar"""
         coords = [i / n for i in self._get_coords()]
-        new_vertex = Vertex(*coords)
+        new_vertex = Vector(*coords)
         return new_vertex
 
     def __floordiv__(self, n: float):
@@ -85,13 +85,13 @@ class Vertex:  # must be interger because of screen coordinates
     def __neg__(self):
         """Rotate a copy of a vector by 180 degrees"""
         coords = [-i for i in self._get_coords()]
-        new_vertex = Vertex(*coords)
+        new_vertex = Vector(*coords)
         return new_vertex
 
 
 #! DEPRECATED
 class Edge:
-    def __init__(self, start: Vertex, end: Vertex) -> None:
+    def __init__(self, start: Vector, end: Vector) -> None:
         self.start, self.end = start, end
 
 

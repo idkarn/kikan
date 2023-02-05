@@ -1,4 +1,4 @@
-from kikan import Engine, Loop, InitEvent, Input, CollisionEvent, Entity, Vertex
+from kikan import Engine, Loop, InitEvent, Input, CollisionEvent, Entity, Vector
 from kikan.physics import Gravity
 from random import randint
 
@@ -23,7 +23,7 @@ class Player(Entity):
 
 class Gem(Entity):
     def respawn(self):
-        self.pos = Vertex(randint(-10, 10), randint(-10, 10))
+        self.pos = Vector(randint(-10, 10), randint(-10, 10))
 
 
 def print_score():
@@ -35,8 +35,8 @@ def print_score():
 @InitEvent
 def init():  # start point of the game
     global player, gem
-    player = Player(Vertex(0, 0), "@")
-    gem = Gem(Vertex(2, 2), "*")
+    player = Player(Vector(0, 0), "@")
+    gem = Gem(Vector(2, 2), "*")
     print("[INIT] Success")
 
 

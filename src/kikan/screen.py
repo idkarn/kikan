@@ -1,6 +1,6 @@
 from blessed import Terminal
 from math import cos, sin
-from .math import Matrix, Vertex, get_line_coords
+from .math import Matrix, Vector, get_line_coords
 from os import get_terminal_size
 from .entity import Entity
 
@@ -42,23 +42,23 @@ class Screen:
     def clear(self) -> None:
         self.render(self.scr.home + self.scr.clear)
 
-    def draw_wireframe(self, vertexes: list[Vertex], edges: list, angle: float, scale: int = 1, color: tuple[int, int, int] = (255, 255, 255)) -> None:
+    def draw_wireframe(self, vertexes: list[Vector], edges: list, angle: float, scale: int = 1, color: tuple[int, int, int] = (255, 255, 255)) -> None:
         rotation = [
             [cos(angle), 0, sin(angle)],
             [0, 1, 0],
             [-sin(angle), 0, cos(angle)]
         ]
 
-        projected_verts: list[Vertex] = []
+        projected_verts: list[Vector] = []
         for vert in vertexes:
             rotated_matrix = Matrix.multiply(rotation, vert.to_matrix())
-            rotated_vert = Vertex(
+            rotated_vert = Vector(
                 rotated_matrix[0][0],
                 rotated_matrix[1][0],
                 rotated_matrix[2][0],
             )
 
-            vert_proj: Vertex = rotated_vert.get_projection(scale)
+            vert_proj: Vector = rotated_vert.get_projection(scale)
             projected_verts.append(vert_proj)
             self.display_symbol(vert_proj.x, vert_proj.y, "*", color)
 
