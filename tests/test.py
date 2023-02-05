@@ -1,10 +1,9 @@
-from kikan.engine import Engine, Loop
-from kikan.events import InitEvent, Input, CreationEvent, CollisionEvent
-from kikan.entity import Entity
-from kikan.math import Vertex
+from kikan import Engine, Loop, InitEvent, Input, CollisionEvent, Entity, Vertex
+from kikan.physics import Gravity
 from random import randint
 
-eng = Engine()
+
+eng = Engine(world="")
 
 player = None
 gem = None
@@ -12,7 +11,6 @@ score = 0
 
 
 class Player(Entity):
-    @CreationEvent.trigger
     def __init__(self, *args) -> None:
         super().__init__(*args)
 
@@ -32,11 +30,6 @@ def print_score():
     size = eng.scr.size
     coords = (-(size["width"] // 2 - 1), size["height"] // 2 - 1)
     eng.scr.display_symbol(*coords, f"Score: {score}", (0, 255, 0))
-
-
-@CreationEvent
-def player_create():
-    print("player created!")
 
 
 @InitEvent
