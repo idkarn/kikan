@@ -17,7 +17,7 @@ class EngineConfig:
 
 
 class Engine:
-    def __init__(self) -> None:
+    def __init__(self, world) -> None:
         ...
 
     def init(self) -> None:  # start engine init phase to create all necessary objects
