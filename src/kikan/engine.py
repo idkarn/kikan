@@ -24,11 +24,9 @@ class Engine:
         ...
 
     def start(self) -> None:
-        term = Terminal()
-        with term.fullscreen(), term.cbreak(), term.hidden_cursor():
-            get_key_delay = 1 / loop.config.fps
-            self.scr = Screen(term, get_key_delay)
-            self._launch()
+        get_key_delay = 1 / loop.config.fps
+        self.scr = Screen(get_key_delay)
+        self._launch()
 
     def _check_input(self):
         key = self.scr.get_key()
@@ -58,6 +56,7 @@ class Engine:
         try:
             loop._loop(internal_loop)
         except Exception:
+            self.scr.terminate_terminal()
             raise LaunchError
 
 

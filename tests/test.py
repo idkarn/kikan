@@ -1,5 +1,4 @@
 from kikan import Engine, Loop, InitEvent, Input, CollisionEvent, Entity, Vector
-from kikan.physics import Gravity
 from random import randint
 
 

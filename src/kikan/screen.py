@@ -6,14 +6,22 @@ from .entity import Entity
 
 
 class Screen:
-    def __init__(self, term: Terminal, delay) -> None:
-        self.scr = term
+    def __init__(self, delay) -> None:
+        self.scr = Terminal()
         self.delay = delay
         term_size = get_terminal_size()
         self.size = {
             "height": term_size.lines,
             "width": term_size.columns
         }
+        self.terminal_contexts = (self.scr.fullscreen(
+        ), self.scr.cbreak(), self.scr.hidden_cursor())
+        for option in self.terminal_contexts:
+            option.__enter__()
+
+    def terminate_terminal(self) -> None:
+        for option in self.terminal_contexts:
+            option.__exit__()
 
     # probably must be private for internal usage only
     def render(self, data: str):
