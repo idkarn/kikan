@@ -21,7 +21,7 @@ class Screen:
 
     def terminate_terminal(self) -> None:
         for option in self.terminal_contexts:
-            option.__exit__()
+            option.__exit__(None, None, None)
 
     # probably must be private for internal usage only
     def render(self, data: str):

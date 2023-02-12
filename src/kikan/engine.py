@@ -50,9 +50,9 @@ class Engine:
     @InitEvent.trigger
     def _launch(self) -> LaunchError:
         def internal_loop():
-            self.scr.clear()  # clear screen
             self._check_input()  # check if any key is down
             self._check_collision()  # check for all collisions
+            self.scr.clear()  # clear screen
         try:
             loop._loop(internal_loop)
         except Exception:
