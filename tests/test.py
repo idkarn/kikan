@@ -28,7 +28,7 @@ class Gem(Entity):
 def print_score():
     size = eng.scr.size
     coords = (-(size["width"] // 2 - 1), size["height"] // 2 - 1)
-    eng.scr.display_symbol(*coords, f"Score: {score}", (0, 255, 0))
+    eng.scr.display_string(*coords, f"Score: {score}", (0, 255, 0))
 
 
 @InitEvent
@@ -39,7 +39,7 @@ def init():  # start point of the game
     print("[INIT] Success")
 
 
-@Loop(fps=5)
+@Loop(fps=10)
 def loop():  # main game loop
     eng.scr.draw(gem)
     eng.scr.draw(player)

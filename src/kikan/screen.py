@@ -18,6 +18,7 @@ class Screen:
         ), self.scr.cbreak(), self.scr.hidden_cursor())
         for option in self.terminal_contexts:
             option.__enter__()
+        self.clear()
 
     def terminate_terminal(self) -> None:
         for option in self.terminal_contexts:
@@ -32,11 +33,13 @@ class Screen:
 
     def display_symbol(self, x: int, y: int, symbol: str, color: tuple[int, int, int] = (255, 255, 255)):
         if abs(x) < self.size["width"] // 2 and abs(y) < self.size["height"] // 2:
-            # print(x, y)
             # translate x, y from a center to the curses coords system
             x, y = self.size["width"] // 2 + x, self.size["height"] // 2 - y
-            self.render(self.scr.color_rgb(*color) + self.scr.move_x(x) + self.scr.move_y(y) +
-                        symbol)
+            self.frame[y][x] = self.scr.color_rgb(*color) + symbol
+
+    def display_string(self, x: int, y: int, s: str, color: tuple[int, int, int] = (255, 255, 255)):
+        for shift in range(len(s)):
+            self.display_symbol(x + shift, y, s[shift], color)
 
     # TODO: make color args more convenient (make it optional)
 
@@ -48,7 +51,14 @@ class Screen:
         return self.scr.inkey(self.delay).lower()
 
     def clear(self) -> None:
-        self.render(self.scr.home + self.scr.clear)
+        self.frame = [[" " for _ in range(self.size["width"])]
+                      for _ in range(self.size["height"])]
+
+    def update(self) -> None:
+        for row in self.frame:
+            for symb in row:
+                self.render(symb)
+        self.clear()
 
     def draw_wireframe(self, vertexes: list[Vector], edges: list, angle: float, scale: int = 1, color: tuple[int, int, int] = (255, 255, 255)) -> None:
         rotation = [

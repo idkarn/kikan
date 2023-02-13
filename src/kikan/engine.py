@@ -49,10 +49,11 @@ class Engine:
 
     @InitEvent.trigger
     def _launch(self) -> LaunchError:
-        def internal_loop():
+        def internal_loop(user_loop: callable):
             self._check_input()  # check if any key is down
             self._check_collision()  # check for all collisions
-            self.scr.clear()  # clear screen
+            user_loop()  # run user's callback function
+            self.scr.update()  # draw screen
         try:
             loop._loop(internal_loop)
         except Exception:
@@ -73,5 +74,4 @@ class Loop:
         while True:
             if self.config.fps > 0:
                 sleep(1 / self.config.fps)
-            internal_loop()
-            self.user_loop()
+            internal_loop(self.user_loop)
