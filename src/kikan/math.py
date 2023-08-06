@@ -5,13 +5,13 @@ import math
 
 # arithmetic operations from https://github.com/philiprbrenan/Vector2/blob/master/Vector2.py
 @dataclass
-class Vector:  # must be interger because of screen coordinates
-    x: int
-    y: int
-    z: int
+class Vector:
+    x: float
+    y: float
+    z: float
 
     def __init__(self, x: float, y: float, z: float = 0) -> None:
-        self.x, self.y, self.z = int(x), int(y), int(z)
+        self.x, self.y, self.z = x, y, z
 
     def get_projection(self, scale: int):
         x_proj = (scale * self.x) // (self.z + scale + 50)
@@ -103,7 +103,7 @@ class Matrix:
 
 
 # algorithm from https://www.uobabylon.edu.iq/eprints/publication_2_22893_6215.pdf
-def get_line_coords(x1: int, y1: int, x2: int, y2: int) -> Iterator[Tuple[int, int]]:
+def get_line_coords(x1: float, y1: float, x2: float, y2: float) -> Iterator[Tuple[int, int]]:
     def sign(n: int) -> -1 or 0 or 1:
         return int(math.copysign(1, n)) if n != 0 else 0
 
@@ -121,7 +121,8 @@ def get_line_coords(x1: int, y1: int, x2: int, y2: int) -> Iterator[Tuple[int, i
     b = 2*dy - 2*dx
 
     # in the original loop starts with 1, this causes an bug when y=0 is not returned
-    for i in range(1, dx):
+    i = 1
+    while i < dx:
         if e < 0:
             if ichg:
                 y += sy
@@ -133,3 +134,4 @@ def get_line_coords(x1: int, y1: int, x2: int, y2: int) -> Iterator[Tuple[int, i
             x += sx
             e += b
         yield x, y
+        i += 1

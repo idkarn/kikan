@@ -31,19 +31,20 @@ class Screen:
     def draw(self, entity: Entity):
         self.display_symbol(entity.pos.x, entity.pos.y, entity.texture)
 
-    def display_symbol(self, x: int, y: int, symbol: str, color: tuple[int, int, int] = (255, 255, 255)):
+    def display_symbol(self, x: float, y: float, symbol: str, color: tuple[int, int, int] = (255, 255, 255)):
+        x, y = round(x), round(y)
         if abs(x) < self.size["width"] // 2 and abs(y) < self.size["height"] // 2:
             # translate x, y from a center to the curses coords system
             x, y = self.size["width"] // 2 + x, self.size["height"] // 2 - y
             self.frame[y][x] = self.scr.color_rgb(*color) + symbol
 
-    def display_string(self, x: int, y: int, s: str, color: tuple[int, int, int] = (255, 255, 255)):
+    def display_string(self, x: float, y: float, s: str, color: tuple[int, int, int] = (255, 255, 255)):
         for shift in range(len(s)):
             self.display_symbol(x + shift, y, s[shift], color)
 
     # TODO: make color args more convenient (make it optional)
 
-    def draw_line(self, x1: int, y1: int, x2: int, y2: int, symb: str = "*", color: tuple[int, int, int] = (255, 255, 255)) -> None:
+    def draw_line(self, x1: float, y1: float, x2: float, y2: float, symb: str = "*", color: tuple[int, int, int] = (255, 255, 255)) -> None:
         for x, y in get_line_coords(x1, y1, x2, y2):
             self.display_symbol(x, y, symb, color)
 
