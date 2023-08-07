@@ -1,5 +1,7 @@
 from inspect import isfunction
 
+from kikan.events import InitEvent
+
 
 class ArgumentsHelper:
     #! suitability in question
@@ -35,3 +37,62 @@ class InitData:  # temp objects that store all data of real objects for engine i
     def __init__(self, cls, *args):
         self.cls = cls
         self.args = args
+
+
+class Logger:
+    default: "Logger"
+
+    def __init__(self, output_file: str):
+        self.ouput_file = open(output_file, "w")
+        self.buffer: list[str] = []  # TODO: make this a queue
+
+        # one thread (main thread that calls print())
+        # adds the the buffer (pushes to the queue)
+
+        # another thread (optional!) (calls _flush() every
+        # now and then (with thread.sleep or something))
+
+        # https://docs.python.org/3/library/threading.html#event-objects
+
+        # if self.multithreading:
+        #     self._flush_thread = \
+        #         threading.thread(self._run_flush_thread)
+
+    def _run_flush_event(self):
+        while self._stop_event.wait(timeout=1):
+            # ^ blocks until the event is set
+            #   maximum for 'timeout' seconds
+            #   returns True if the flag is set
+            # so the flushes happen every second
+            self._flush()
+
+    def close(self):
+        # set a flag to show that the file is closed
+        # see https://www.pythontutorial.net/python-concurrency/python-threading-event/
+        # self._stop_event.set()
+        # self._flush_thread.join()
+        self.output_file.close()
+
+    def _flush(self):
+        buf = self.buffer.copy()
+        for msg in buf:
+            self.ouput_file.write(msg)
+
+    def print(self, *args, end='\n', sep=' '):
+        self.buffer.append(sep.join(args) + end)
+        # if not self.multithreading:
+        self._flush()
+
+    @InitEvent.trigger
+    @staticmethod
+    def init():
+        if hasattr(Logger, "deinit"):
+            print("Logger.default already exists")
+            return
+        Logger.default = Logger("default.log")
+
+    # @DeInitEvent.trigger
+    @staticmethod
+    def deinit():
+        if hasattr(Logger, "default"):
+            Logger.default.close()
