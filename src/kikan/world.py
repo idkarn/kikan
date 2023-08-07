@@ -1,15 +1,18 @@
+from .math import Vector
+
 
 class WorldObject:
-    def __init__(self):
-        self.texture = ""
+    def __init__(self, position: Vector, texture: str):
+        self.texture = texture
+        self.position = position
 
 
-class Map:
-    def __init__(self):
-        self.config: list[WorldObject] = []
+class WorldMap:
+    def __init__(self, config: list[WorldObject]):
+        self.config = config
 
 
 class World:
-    def __init__(self):
-        self.entities = []
-        self.map = Map()
+    def __init__(self, map: WorldMap, entities):
+        self.entities = entities
+        self.map = map
