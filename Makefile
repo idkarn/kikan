@@ -10,7 +10,7 @@ run:
 	${PYTHON} src/kikan/main.py
 
 watch:
-	${PYTHON} monitor.py tests/test.py __pycache__,dist
+	${PYTHON} monitor.py tests/zombie.py __pycache__,dist,logs
 
 build:
 	${PYTHON} -m build

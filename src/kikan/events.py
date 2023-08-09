@@ -36,7 +36,7 @@ class EventBase:
     def __init__(self, *args: list[callable], **kwargs: any) -> None:
         if len(args) > 1:
             raise ValueError()
-        elif len(args) == 1 and inspect.isfunction(args[0]):
+        elif len(args) == 1 and callable(args[0]):
             self.__wrapped_method = args[0]
             self._handle(args[0])
         self._args = kwargs
