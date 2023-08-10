@@ -75,21 +75,23 @@ class Logger:
 
     def _flush(self):
         buf = self.buffer.copy()
+        self.buffer.clear()
         for msg in buf:
             self.ouput_file.write(msg)
+        self.ouput_file.flush()
 
     def print(self, *args, end='\n', sep=' '):
         self.buffer.append(sep.join(args) + end)
         # if not self.multithreading:
         self._flush()
 
-    @InitEvent.trigger
+    @InitEvent
     @staticmethod
     def init():
-        if hasattr(Logger, "deinit"):
+        if hasattr(Logger, "default"):
             print("Logger.default already exists")
             return
-        Logger.default = Logger("default.log")
+        Logger.default = Logger(".logs/default.log")
 
     # @DeInitEvent.trigger
     @staticmethod
