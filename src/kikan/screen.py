@@ -26,7 +26,7 @@ class Screen:
 
     # probably must be private for internal usage only
     def render(self, data: str):
-        print(data, end='', flush=True)
+        print(data, end='', flush=False)
 
     def draw(self, entity: Entity):
         self.display_symbol(entity.pos.x, entity.pos.y, entity.texture)
@@ -60,6 +60,7 @@ class Screen:
             for symb in row:
                 self.render(symb)
         self.clear()
+        print(end='', flush=True)
 
     def draw_wireframe(self, vertexes: list[Vector], edges: list, angle: float, scale: int = 1, color: tuple[int, int, int] = (255, 255, 255)) -> None:
         rotation = [

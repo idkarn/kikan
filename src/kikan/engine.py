@@ -53,7 +53,7 @@ class Engine:
             if isinstance(event, CollisionEvent):
                 for entity in entities:
                     entity: Entity
-                    if fn._self.pos == entity.pos and entity is not fn._self:
+                    if (fn._self.pos - entity.pos).length() <= 1 and entity is not fn._self:
                         fn(fn._self)
 
     def _check_world_map_collision(self):
