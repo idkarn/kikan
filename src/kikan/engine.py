@@ -51,14 +51,13 @@ class Engine:
             listener: tuple[EventBase, callable]
             event, fn = listener
             if isinstance(event, CollisionEvent):
-                for entity in entities:
-                    entity: Entity
+                for entity in list(entities.values()):
                     if fn._self.pos == entity.pos and entity is not fn._self:
                         fn(fn._self)
 
     def _check_world_map_collision(self):
         for world_obj in self.game_world.map.config:
-            for entity in entities:
+            for entity in entities.values():
                 if world_obj.position == entity.pos:
                     entity.pos = entity.prev_pos
 
@@ -68,7 +67,7 @@ class Engine:
             self.scr.display_symbol(x, y, world_obj.texture)
 
     def _update_entities(self):
-        for entity in entities:
+        for entity in list(entities.values()):
             entity._update()
 
     @InitEvent.trigger

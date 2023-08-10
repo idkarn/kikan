@@ -17,14 +17,14 @@ class Entity:
         methods = getmembers(self.__class__, predicate=isfunction)
         for name, method in methods:
             method._self = self
-        entities.append(self)
         self.pos = position
         self.speed = Vector(0, 0)
 
         self.texture = texture
         self.prev_pos: Vector = None
         self.__is_hidden: bool = False
-        self.__id: int = len(entities)
+        self.__id: int = id(self)
+        entities[self.__id] = self
 
         self.__prev_timestamp: float = 0
         """The value updates only at the end of `_update` code, including user-defined `update` function"""
@@ -64,7 +64,7 @@ class Entity:
                 self.pos.y += 1
 
     def destroy(self):
-        entities.pop(self.__id)
+        del entities[self.__id]
         del self
 
     def hide(self):
@@ -74,4 +74,4 @@ class Entity:
         self.__is_hidden = False
 
 
-entities: list[Entity] = []
+entities: dict[int, Entity] = {}

@@ -91,7 +91,7 @@ class Logger:
         if hasattr(Logger, "default"):
             print("Logger.default already exists")
             return
-        Logger.default = Logger(".logs/default.log")
+        Logger.default = Logger("logs/default.log")
 
     # @DeInitEvent.trigger
     @staticmethod
