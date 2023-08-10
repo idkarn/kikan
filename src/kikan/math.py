@@ -25,13 +25,13 @@ class Vector:
             [self.z]
         ]
 
-    def get_length(self):
+    def length(self):
         """Length of a vector"""
         return (self.x**2 + self.y**2) ** 0.5
 
     def normalize(self):
         """Normalize a vector"""
-        l = self.get_length()
+        l = self.length()
         return self / l if l else self
 
     def dot(self, other):
@@ -76,11 +76,11 @@ class Vector:
 
     def __abs__(self):
         """Length of a vector"""
-        return self.get_length()
+        return self.length()
 
     def __len__(self):
         """Length of a vector"""
-        return self.get_length()
+        return self.length()
 
     def __neg__(self):
         """Rotate a copy of a vector by 180 degrees"""
