@@ -1,8 +1,8 @@
-from kikan import Engine, Loop, InitEvent, Input, CollisionEvent, Entity, Vector
 from random import randint
 
+from kikan import Engine, Loop, InitEvent, Input, CollisionEvent, Entity, Vector, WorldMap, World
 
-eng = Engine(world="")
+eng = Engine(World(WorldMap([]), []))
 
 player = None
 gem = None
@@ -21,8 +21,16 @@ class Player(Entity):
 
 
 class Gem(Entity):
+    def __init__(self, position: Vector, texture: str) -> None:
+        super().__init__(position, texture)
+        self.velocity = Vector(5, 0)
+
     def respawn(self):
         self.pos = Vector(randint(-10, 10), randint(-10, 10))
+        self.velocity = Vector(5, 0)
+
+    def update(self):
+        self.apply_force(Vector(-1, 0))
 
 
 def print_score():
@@ -35,7 +43,7 @@ def print_score():
 def init():  # start point of the game
     global player, gem
     player = Player(Vector(0, 0), "@")
-    gem = Gem(Vector(2, 2), "*")
+    gem = Gem(Vector(2, 4), "*")
     print("[INIT] Success")
 
 

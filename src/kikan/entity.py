@@ -18,15 +18,18 @@ class Entity:
         for name, method in methods:
             method._self = self
         entities.append(self)
+
+        self.mass = 1
         self.pos = position
-        self.speed = Vector(0, 0)
+        self.velocity = Vector(0, 0)
+        self.accel = Vector(0, 0)
 
         self.texture = texture
-        self.prev_pos: Vector = None
+        self.prev_pos: Vector | None = None
         self.__is_hidden: bool = False
         self.__id: int = len(entities)
 
-        self.__prev_timestamp: float = 0
+        self.__prev_timestamp: float = time.time()
         """The value updates only at the end of `_update` code, including user-defined `update` function"""
 
     def pre_update(self):
@@ -39,18 +42,20 @@ class Entity:
         self.prev_pos = Vector(self.pos.x, self.pos.y)
 
         dt = time.time() - self.__prev_timestamp
-        self.pos += self.speed * dt
+        self.velocity += self.accel * dt
+        self.accel = Vector(0, 0)
+        self.pos += self.velocity * dt
 
         self.update()
 
         self.__prev_timestamp = time.time()
 
-    def apply_force(self):
-        ...
-
-    def update(self, *args, **kwargs) -> None:
+    def update(self) -> None:
         """The method can be implemented by the user"""
         ...
+
+    def apply_force(self, force: Vector):
+        self.accel += force / self.mass
 
     def step(self, side: STEP_SIDE):
         match side:
