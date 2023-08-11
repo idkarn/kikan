@@ -1,10 +1,13 @@
+import os
+import time
+from datetime import datetime
 from inspect import isfunction
 
 from kikan.events import InitEvent
 
 
 class ArgumentsHelper:
-    #! suitability in question
+    # ! suitability in question
     """ __init__ method decorator for helping to use other decorators with calling `@Example(foo="bar")` or without directly calling `@Example"""
 
     def __init__(self, fn: callable) -> None:
@@ -21,6 +24,7 @@ class ArgumentsHelper:
 
                 def set_name(self, owner, name):
                     setattr(owner, name, self._wrapped_method)
+
                 setattr(owner, "__set_name__", set_name)
 
                 owner_init(self, *args, **kwargs)
@@ -29,7 +33,9 @@ class ArgumentsHelper:
                     self._wrapped_method = fn
                     owner_init(self, *args, **kwargs)
                     return fn
+
                 setattr(owner, "__call__", call_class)
+
         setattr(owner, name, wrapper)
 
 
@@ -42,8 +48,21 @@ class InitData:  # temp objects that store all data of real objects for engine i
 class Logger:
     default: "Logger"
 
-    def __init__(self, output_file: str):
-        self.ouput_file = open(output_file, "w")
+    def __init__(self):
+        logs = [int(f[6:-4]) for f in os.listdir('logs')
+                if f.startswith('group_') and f.endswith('.log') and f[6:-4].isdigit()]
+        if not logs:
+            self.main_file = open(f'logs/group_1.log', 'w')
+            self.last_group_number = 1
+            self.lines_in_log = 0
+        else:
+            self.last_group_number = max(logs)
+            self.main_file = open(f'logs/group_{self.last_group_number}.log', 'r+')
+            self.lines_in_log = len(self.main_file.readlines())
+        self.check_log_overflow()
+
+        self.latest_log_file = open('logs/latest.log', "w")
+
         self.buffer: list[str] = []  # TODO: make this a queue
 
         # one thread (main thread that calls print())
@@ -58,6 +77,13 @@ class Logger:
         #     self._flush_thread = \
         #         threading.thread(self._run_flush_thread)
 
+    def check_log_overflow(self):
+        if self.lines_in_log >= 5000:
+            self.main_file.close()
+            self.lines_in_log = 0
+            self.last_group_number += 1
+            self.main_file = open(f'logs/group_{self.last_group_number}.log', 'w')
+
     def _run_flush_event(self):
         while self._stop_event.wait(timeout=1):
             # ^ blocks until the event is set
@@ -71,19 +97,26 @@ class Logger:
         # see https://www.pythontutorial.net/python-concurrency/python-threading-event/
         # self._stop_event.set()
         # self._flush_thread.join()
-        self.output_file.close()
+        self.main_file.close()
+        self.latest_log_file.close()
 
     def _flush(self):
         buf = self.buffer.copy()
         self.buffer.clear()
         for msg in buf:
-            self.ouput_file.write(msg)
-        self.ouput_file.flush()
+            self.main_file.write(msg)
+            self.latest_log_file.write(msg)
+        self.main_file.flush()
+        self.latest_log_file.flush()
 
-    def print(self, *args, end='\n', sep=' '):
-        self.buffer.append(sep.join(args) + end)
+    def print(self, *args, end='\n', sep=' ', hide_time_stamp=False):
+        msg = sep.join(args) + end
+        self.buffer.append(msg if hide_time_stamp else f"[{datetime.now().astimezone().isoformat()}] {msg}")
         # if not self.multithreading:
         self._flush()
+
+        self.lines_in_log += msg.count('\n')
+        self.check_log_overflow()
 
     @InitEvent
     @staticmethod
@@ -91,7 +124,13 @@ class Logger:
         if hasattr(Logger, "default"):
             print("Logger.default already exists")
             return
-        Logger.default = Logger("logs/default.log")
+        Logger.default = Logger()
+
+        heading_length = 70
+        Logger.default.print('=' * heading_length, hide_time_stamp=True)
+        time_msg = ' ' + time.ctime() + ' '
+        Logger.default.print(time_msg.center(heading_length, '='), hide_time_stamp=True)
+        Logger.default.print('=' * heading_length, hide_time_stamp=True)
 
     # @DeInitEvent.trigger
     @staticmethod
