@@ -1,3 +1,4 @@
+from .entity import Entity
 from .math import Vector
 
 
@@ -13,6 +14,6 @@ class WorldMap:
 
 
 class World:
-    def __init__(self, map: WorldMap, entities):
+    def __init__(self, world_map: WorldMap, entities: dict[int, Entity]):
         self.entities = entities
-        self.map = map
+        self.map = world_map

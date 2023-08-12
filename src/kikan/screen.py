@@ -7,36 +7,38 @@ from .entity import Entity
 
 class Screen:
     def __init__(self, delay) -> None:
-        self.scr = Terminal()
+        self.screen = Terminal()
         self.delay = delay
         term_size = get_terminal_size()
         self.size = {
             "height": term_size.lines,
             "width": term_size.columns
         }
-        self.terminal_contexts = (self.scr.fullscreen(
-        ), self.scr.cbreak(), self.scr.hidden_cursor())
+        self.terminal_contexts = (self.screen.fullscreen(
+        ), self.screen.cbreak(), self.screen.hidden_cursor())
         for option in self.terminal_contexts:
             option.__enter__()
         self.clear()
+        self.frame = [[" " for _ in range(self.size["width"])]
+                      for _ in range(self.size["height"])]
 
     def terminate_terminal(self) -> None:
         for option in self.terminal_contexts:
             option.__exit__(None, None, None)
 
-    # probably must be private for internal usage only
-    def render(self, data: str):
+    @staticmethod
+    def _render(data: str):
         print(data, end='', flush=False)
 
     def draw(self, entity: Entity):
-        self.display_symbol(entity.pos.x, entity.pos.y, entity.texture)
+        self.display_symbol(entity.position.x, entity.position.y, entity.texture)
 
     def display_symbol(self, x: float, y: float, symbol: str, color: tuple[int, int, int] = (255, 255, 255)):
         x, y = round(x), round(y)
         if abs(x) < self.size["width"] // 2 and abs(y) < self.size["height"] // 2:
             # translate x, y from a center to the curses coords system
             x, y = self.size["width"] // 2 + x, self.size["height"] // 2 - y
-            self.frame[y][x] = self.scr.color_rgb(*color) + symbol
+            self.frame[y][x] = self.screen.color_rgb(*color) + symbol
 
     def display_string(self, x: float, y: float, s: str, color: tuple[int, int, int] = (255, 255, 255)):
         for shift in range(len(s)):
@@ -44,12 +46,13 @@ class Screen:
 
     # TODO: make color args more convenient (make it optional)
 
-    def draw_line(self, x1: float, y1: float, x2: float, y2: float, symb: str = "*", color: tuple[int, int, int] = (255, 255, 255)) -> None:
+    def draw_line(self, x1: float, y1: float, x2: float, y2: float, symb: str = "*",
+                  color: tuple[int, int, int] = (255, 255, 255)) -> None:
         for x, y in get_line_coords(x1, y1, x2, y2):
             self.display_symbol(x, y, symb, color)
 
     def get_key(self) -> str:
-        return self.scr.inkey(self.delay).lower()
+        return self.screen.inkey(self.delay).lower()
 
     def clear(self) -> None:
         self.frame = [[" " for _ in range(self.size["width"])]
@@ -58,7 +61,7 @@ class Screen:
     def update(self) -> None:
         for row in self.frame:
             for symb in row:
-                self.render(symb)
+                self._render(symb)
         self.clear()
         print(end='', flush=True)
 

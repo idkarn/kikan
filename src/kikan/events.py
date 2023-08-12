@@ -1,7 +1,4 @@
 from dataclasses import dataclass
-import inspect
-from .entity import Entity
-
 
 _events_index = {}
 _tracking_events: list[tuple[object, callable]] = []
@@ -39,7 +36,7 @@ class EventBase:
         elif len(args) == 1 and callable(args[0]):
             self.__wrapped_method = args[0]
             self._handle(args[0])
-        self._args = kwargs
+        self.args = kwargs
 
     def __call__(self, fn: callable) -> any:
         self._handle(fn)

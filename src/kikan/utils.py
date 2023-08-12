@@ -3,6 +3,7 @@ import time
 from datetime import datetime
 from inspect import isfunction
 
+from kikan.errors import LoggerInitializationError
 from kikan.events import InitEvent
 
 
@@ -86,13 +87,13 @@ class Logger:
             self.last_group_number += 1
             self.main_file = open(f'logs/group_{self.last_group_number}.log', 'w')
 
-    def _run_flush_event(self):
-        while self._stop_event.wait(timeout=1):
-            # ^ blocks until the event is set
-            #   maximum for 'timeout' seconds
-            #   returns True if the flag is set
-            # so the flushes happen every second
-            self._flush()
+    # def _run_flush_event(self):
+    #     while self._stop_event.wait(timeout=1):
+    #         # ^ blocks until the event is set
+    #         #   maximum for 'timeout' seconds
+    #         #   returns True if the flag is set
+    #         # so the flushes happen every second
+    #         self._flush()
 
     def close(self):
         # set a flag to show that the file is closed
@@ -111,7 +112,7 @@ class Logger:
         self.main_file.flush()
         self.latest_log_file.flush()
 
-    def print(self, *args, end='\n', sep=' ', hide_time_stamp=False):
+    def print_(self, *args, end='\n', sep=' ', hide_time_stamp=False):
         if self.first_print:
             self.first_print = False
             self.start_session()
@@ -123,17 +124,24 @@ class Logger:
         self.lines_in_log += msg.count('\n')
         self.check_log_overflow()
 
+    @staticmethod
+    def print(*args, end='\n', sep=' ', hide_time_stamp=False):
+        try:
+            Logger.default.print_(*args, end=end, sep=sep, hide_time_stamp=hide_time_stamp)
+        except AttributeError:
+            raise LoggerInitializationError
+
     def start_session(self):
-        self.print('=' * Logger.HEADING_LENGTH, hide_time_stamp=True)
+        self.print_('=' * Logger.HEADING_LENGTH, hide_time_stamp=True)
         time_msg = ' ' + time.ctime() + ' '
-        self.print(time_msg.center(Logger.HEADING_LENGTH, '='), hide_time_stamp=True)
-        self.print('=' * Logger.HEADING_LENGTH, hide_time_stamp=True)
+        self.print_(time_msg.center(Logger.HEADING_LENGTH, '='), hide_time_stamp=True)
+        self.print_('=' * Logger.HEADING_LENGTH, hide_time_stamp=True)
 
     @InitEvent
     @staticmethod
     def init():
         if hasattr(Logger, "default"):
-            print("Logger.default already exists")
+            Logger.print("Logger.default already exists")
             return
         Logger.default = Logger()
 
@@ -142,3 +150,4 @@ class Logger:
     def terminate():
         if hasattr(Logger, "default"):
             Logger.default.close()
+            delattr(Logger, "default")
