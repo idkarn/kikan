@@ -47,6 +47,7 @@ class InitData:  # temp objects that store all data of real objects for engine i
 
 class Logger:
     default: "Logger"
+    HEADING_LENGTH = 70
 
     def __init__(self):
         logs = [int(f[6:-4]) for f in os.listdir('logs')
@@ -64,6 +65,7 @@ class Logger:
         self.latest_log_file = open('logs/latest.log', "w")
 
         self.buffer: list[str] = []  # TODO: make this a queue
+        self.first_print = True
 
         # one thread (main thread that calls print())
         # adds the the buffer (pushes to the queue)
@@ -110,6 +112,9 @@ class Logger:
         self.latest_log_file.flush()
 
     def print(self, *args, end='\n', sep=' ', hide_time_stamp=False):
+        if self.first_print:
+            self.first_print = False
+            self.start_session()
         msg = sep.join(args) + end
         self.buffer.append(msg if hide_time_stamp else f"[{datetime.now().astimezone().isoformat()}] {msg}")
         # if not self.multithreading:
@@ -117,6 +122,12 @@ class Logger:
 
         self.lines_in_log += msg.count('\n')
         self.check_log_overflow()
+
+    def start_session(self):
+        self.print('=' * Logger.HEADING_LENGTH, hide_time_stamp=True)
+        time_msg = ' ' + time.ctime() + ' '
+        self.print(time_msg.center(Logger.HEADING_LENGTH, '='), hide_time_stamp=True)
+        self.print('=' * Logger.HEADING_LENGTH, hide_time_stamp=True)
 
     @InitEvent
     @staticmethod
@@ -126,14 +137,8 @@ class Logger:
             return
         Logger.default = Logger()
 
-        heading_length = 70
-        Logger.default.print('=' * heading_length, hide_time_stamp=True)
-        time_msg = ' ' + time.ctime() + ' '
-        Logger.default.print(time_msg.center(heading_length, '='), hide_time_stamp=True)
-        Logger.default.print('=' * heading_length, hide_time_stamp=True)
-
     # @DeInitEvent.trigger
     @staticmethod
-    def deinit():
+    def terminate():
         if hasattr(Logger, "default"):
             Logger.default.close()
