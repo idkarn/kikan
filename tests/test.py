@@ -1,4 +1,4 @@
-from kikan import Engine, Loop, InitEvent, Input, CollisionEvent, Entity, Vector, World, WorldMap, WorldObject
+from kikan import Engine, Loop, InitEvent, Input, CollisionEvent, Entity, Vector, World, WorldMap, WorldObject, Logger
 from random import randint
 
 world_map = WorldMap([
@@ -10,10 +10,6 @@ world = World(world_map, [])
 
 
 eng = Engine(world)
-
-player = None
-gem = None
-score = 0
 
 
 class Player(Entity):
@@ -38,6 +34,11 @@ class Gem(Entity):
 
     def update(self):
         self.apply_force(Vector(-1, 0))
+
+
+player: Player
+gem: Gem
+score = 0
 
 
 def print_score():
@@ -66,21 +67,25 @@ def loop():  # main game loop
 @Input(key="d")
 def inputD():
     player.pos.x += 1
+    Logger.default.print('D')
 
 
 @Input(key="a")
 def inputA():
     player.pos.x -= 1
+    Logger.default.print('A')
 
 
 @Input(key="w")
 def inputW():
     player.pos.y += 1
+    Logger.default.print('W')
 
 
 @Input(key="s")
 def inputS():
     player.pos.y -= 1
+    Logger.default.print('S')
 
 
 @Input(key="q")
