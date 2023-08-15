@@ -15,6 +15,7 @@ class ListenerInfo:
     class_: Optional[type]
     function: FunctionType
     arguments: Optional[dict[str, Any]]
+    instance: Optional[object]
 
     def __init__(self, *args, **kwargs) -> None:
         if len(args) == 1 and isinstance(args[0], FunctionType):
@@ -32,6 +33,8 @@ class ListenerInfo:
             repr_str += f" {self.function}"
         if hasattr(self, "arguments"):
             repr_str += f" {self.arguments}"
+        if hasattr(self, "instance"):
+            repr_str += f" {self.instance}"
         return repr_str
 
 
@@ -42,8 +45,17 @@ class ListenerBase:
     info: ListenerInfo
 
     def __set_name__(self, owner, name) -> None:
+        orig_init = getattr(owner, "__init__")
+
+        def init_wrapper(wrapped_self, *args, **kwargs):
+            print(self, wrapped_self)
+            self.info.instance = wrapped_self
+            EventManager.add_event_listener(self)
+            orig_init(wrapped_self, *args, **kwargs)
+
         self.info.class_ = owner
         setattr(owner, name, self.info.function)
+        setattr(owner, "__init__", init_wrapper)
 
     def __init__(self, func: FunctionType) -> None:
         self.info = ListenerInfo(func)
@@ -73,6 +85,8 @@ EventType = TypeVar('EventType', ListenerBase, TriggerBase)
 
 
 class Configurable(Generic[EventType]):
+    """Unstable feature"""
+
     def __init__(self, *args, **kwargs) -> None:
         if len(args) > 0:
             raise ListenerDefiningError
