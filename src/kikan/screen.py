@@ -29,7 +29,7 @@ class Screen:
         print(data, end='', flush=False)
 
     def draw(self, entity: Entity):
-        self.display_symbol(entity.pos.x, entity.pos.y, entity.texture)
+        self.display_string(entity.pos.x, entity.pos.y, entity.texture)
 
     def display_symbol(self, x: float, y: float, symbol: str, color: tuple[int, int, int] = (255, 255, 255)):
         x, y = round(x), round(y)
