@@ -1,12 +1,14 @@
 from __future__ import annotations
 from types import FunctionType
-from typing import Literal, TYPE_CHECKING
+from typing import Literal, TYPE_CHECKING, List, Any
 if TYPE_CHECKING:
     from .entity import Entity
     from .engine import Engine
 
 
-EventType = Literal["init", "pre_update", "update", "trigger", "collision"]
+EventType = Literal["init", "pre_update",
+                    "update", "trigger", "collision", "input"]
+EventContext = List[Any]
 
 
 class EventManager:
@@ -17,16 +19,25 @@ class EventManager:
     def add_event_listener(cls, fn: FunctionType) -> None:
         cls.tracking_events.append(fn)
 
-    def tick(self):
-        ...
+    def handle_input(self):
+        pressed_key = self.engine.scr.get_key()
+        self.notify('input', [pressed_key])
 
-    def notify(self, event: EventType) -> None:
+    def tick(self):
+        self.notify('pre_update')
+        for entity in self.engine.game_world.entities:
+            entity._update()
+        self.notify('update')
+
+        self.handle_input()
+
+    def notify(self, event: EventType, ctx: EventContext = []) -> None:
         """Dispatches current event for all entities"""
         for entity in self.engine.game_world.entities + self.engine.game_world.meta_entities:
-            self.dispatch(entity, event)
+            self.dispatch(entity, event, ctx)
 
-    def dispatch(self, entity: Entity, event: EventType):
+    def dispatch(self, entity: Entity, event: EventType, ctx: EventContext = []):
         """Calls entity's method for handling this event"""
         method_name = f"on_{event}"
         if hasattr(entity, method_name) and (method := getattr(entity, method_name)):
-            method()
+            method(*ctx)

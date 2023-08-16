@@ -8,7 +8,6 @@ from .world import World
 from .errors import LaunchError
 from .screen import Screen
 from time import sleep
-from .events import InitEvent, EventBase, Input, CollisionEvent, _tracking_events
 from .utils import Logger
 
 
@@ -44,23 +43,16 @@ class Engine:
         # TODO: dispatch DeInit event
         pass
 
-    def _check_input(self):
-        key = self.scr.get_key()
-        for listener in _tracking_events:
-            listener: tuple[EventBase, callable]
-            event = listener[0]
-            if isinstance(event, Input):
-                if event._args["key"] == key:
-                    listener[1]()
-
     def _check_collision(self):
-        for listener in _tracking_events:
-            listener: tuple[EventBase, callable]
-            event, fn = listener
-            if isinstance(event, CollisionEvent):
-                for entity in self.game_world.entities:
-                    if (fn._self.pos - entity.pos).length() <= 1 and entity is not fn._self:
-                        fn(fn._self)
+        for i in range(len(self.game_world.entities)):
+            for j in range(i+1, len(self.game_world.entities)):
+                entity1 = self.game_world.entities[i]
+                entity2 = self.game_world.entities[j]
+                if (entity1.pos - entity2.pos).length() <= 1:
+                    self.event_manager.dispatch(
+                        entity1, 'collision', [entity2])
+                    self.event_manager.dispatch(
+                        entity2, 'collision', [entity1])
 
     def _check_world_map_collision(self):
         for world_obj in self.game_world.map.config:
@@ -77,23 +69,13 @@ class Engine:
         for entity in self.game_world.entities:
             self.scr.draw(entity)
 
-    def _update_entities(self):
-        self.event_manager.notify('pre_update')
-        for entity in self.game_world.entities:
-            entity._update()
-        self.event_manager.notify('update')
-
-    def _update_screen(self):
-        self.scr.update()
-
     def __do_tick(self) -> None:
-        self._update_entities()
-        self._check_input()
+        self.event_manager.tick()
         self._check_collision()
         self._draw_world()
         self._draw_entities()
         self._check_world_map_collision()
-        self._update_screen()
+        self.scr.update()
 
     def _launch_loop_handler(self) -> LaunchError:
         try:

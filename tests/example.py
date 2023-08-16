@@ -1,42 +1,36 @@
 from kikan import engine, Entity, Vector
-from kikan.entity import EmptyObject
+from kikan.utils import Logger
+
+
+class Player(Entity):
+    def on_input(self, key):
+        match key:
+            case "a":
+                self.step("left")
+            case "d":
+                self.step("right")
+            case "s":
+                self.step("down")
+            case "w":
+                self.step("up")
 
 
 class NPC(Entity):
-    def __init__(self, pos, tex):
-        super().__init__(pos, tex)
-        self.phase = 0
+    is_right_direction = True
 
     def on_update(self):
-        match self.phase:
-            case 0:
-                self.step("right")
-            case 1:
-                self.step("up")
-            case 2:
-                self.step("left")
-            case 3:
-                self.step("down")
-        self.phase += 1
-        if self.phase == 4:
-            self.phase = 0
+        if self.pos.x == 4:
+            self.is_right_direction = False
+        elif self.pos.x == -4:
+            self.is_right_direction = True
+        self.step("right" if self.is_right_direction else "left")
 
-
-class DisplayManager(EmptyObject):
-    ticks = 0
-
-    @classmethod
-    def on_update(cls):
-        display.texture = str(cls.ticks)
-        cls.ticks += 1
-
-
-class Display(Entity):
-    def __init__(self):
-        super().__init__(Vector(-30, 10), "")
+    def on_collision(self, other):
+        if other is player:
+            self.destroy()
 
 
 npc = NPC(Vector(0, 0), "NPC")
-display = Display()
+player = Player(Vector(0, 3), "P")
 
 engine.start()
