@@ -1,6 +1,4 @@
 from dataclasses import dataclass
-import inspect
-from .entity import Entity
 
 
 _events_index = {}

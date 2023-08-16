@@ -1,6 +1,5 @@
-from .engine import *
-from .math import *
-from .screen import *
-from .events import *
-from .world import *
-from .utils import *
+from .main import *
+from .entity import Entity
+from .math import Vector
+
+# NOTE: import here only most important variables and keep others in their modules

@@ -1,22 +1,20 @@
 from dataclasses import dataclass
-import sys
 from typing import Callable
 
-from .math import Vector
+
+from .events_new import EventManager
+
 from .world import World
 from .errors import LaunchError
 from .screen import Screen
 from time import sleep
-from blessed import Terminal
 from .events import InitEvent, EventBase, Input, CollisionEvent, _tracking_events
-from .entity import Entity, entities
-
-loop = None  # TODO: replace global variable to other stuff
+from .utils import Logger
 
 
 @dataclass
 class EngineConfig:
-    fps: float
+    fps: float = 10
 
 
 class Engine:
@@ -24,14 +22,23 @@ class Engine:
         self.game_world = world
         self._init_hooks: list[Callable[[], None]] = []
         self._deinit_hooks: list[Callable[[], None]] = []
+        self.event_manager = EventManager(self)
+        self.config = EngineConfig()
+        Logger.init()
 
     def init(self) -> None:  # start engine init phase to create all necessary objects
         ...
 
+    def setup(self, config: EngineConfig) -> None:
+        self.config = config
+
     def start(self) -> None:
-        get_key_delay = 1 / loop.config.fps
+        get_key_delay = 1 / self.config.fps
         self.scr = Screen(get_key_delay)
-        self._launch()
+        self._launch_loop_handler()
+
+    def load_world(self, world: World) -> None:
+        self.game_world = world
 
     def _deinit(self):
         # TODO: dispatch DeInit event
@@ -51,13 +58,13 @@ class Engine:
             listener: tuple[EventBase, callable]
             event, fn = listener
             if isinstance(event, CollisionEvent):
-                for entity in list(entities.values()):
+                for entity in self.game_world.entities:
                     if (fn._self.pos - entity.pos).length() <= 1 and entity is not fn._self:
                         fn(fn._self)
 
     def _check_world_map_collision(self):
         for world_obj in self.game_world.map.config:
-            for entity in entities.values():
+            for entity in self.game_world.entities:
                 if world_obj.position == entity.pos:
                     entity.pos = entity.prev_pos
 
@@ -66,39 +73,34 @@ class Engine:
             x, y = world_obj.position.x, world_obj.position.y
             self.scr.display_symbol(x, y, world_obj.texture)
 
-    def _update_entities(self):
-        for entity in list(entities.values()):
-            entity._update()
+    def _draw_entities(self):
+        for entity in self.game_world.entities:
+            self.scr.draw(entity)
 
-    @InitEvent.trigger
-    def _launch(self) -> LaunchError:
-        def internal_loop(user_loop: callable):
-            self._update_entities()
-            self._check_input()  # check if any key is down
-            self._check_collision()  # check for all collisions
-            self._draw_world()
-            self._check_world_map_collision()
-            user_loop()  # run user's callback function
-            self.scr.update()  # draw screen
+    def _update_entities(self):
+        self.event_manager.notify('pre_update')
+        for entity in self.game_world.entities:
+            entity._update()
+        self.event_manager.notify('update')
+
+    def _update_screen(self):
+        self.scr.update()
+
+    def __do_tick(self) -> None:
+        self._update_entities()
+        self._check_input()
+        self._check_collision()
+        self._draw_world()
+        self._draw_entities()
+        self._check_world_map_collision()
+        self._update_screen()
+
+    def _launch_loop_handler(self) -> LaunchError:
         try:
-            loop._loop(internal_loop)
+            self.__do_tick()
+            sleep(1 / self.config.fps)
+            self._launch_loop_handler()
         except Exception as ex:
             self.scr.terminate_terminal()
             self._deinit()
             raise LaunchError() from ex
-
-
-class Loop:
-    def __init__(self, **kwargs: any) -> None:
-        global loop
-        self.config = EngineConfig(**kwargs)
-        loop = self
-
-    def __call__(self, fn: callable) -> any:
-        self.user_loop = fn
-
-    def _loop(self, internal_loop: callable) -> None:
-        while True:
-            if self.config.fps > 0:
-                sleep(1 / self.config.fps)
-            internal_loop(self.user_loop)

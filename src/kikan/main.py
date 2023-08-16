@@ -1,14 +1,10 @@
+import typing as _typing
+import kikan.world as _world
+
 from .engine import Engine
-from .errors import LaunchError
 
+if _typing.TYPE_CHECKING:
+    ...
 
-def main():
-    eng = Engine()
-    try:
-        eng.start()
-    except LaunchError:
-        print("start failed")
-
-
-if __name__ == "__main__":
-    main()
+_default_world = _world.World(_world.WorldMap([]), [])
+engine = Engine(_default_world)

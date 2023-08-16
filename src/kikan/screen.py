@@ -1,8 +1,12 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .entity import Entity
+
 from blessed import Terminal
 from math import cos, sin
 from .math import Matrix, Vector, get_line_coords
 from os import get_terminal_size
-from .entity import Entity
 
 
 class Screen:
