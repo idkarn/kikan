@@ -2,8 +2,7 @@ from dataclasses import dataclass
 from typing import Callable
 
 
-from .events_new import EventManager
-
+from .events import EventManager
 from .world import World
 from .errors import LaunchError
 from .screen import Screen
