@@ -53,17 +53,6 @@ class Engine:
                     self.event_manager.dispatch(
                         entity2, 'collision', [entity1])
 
-    def _check_world_map_collision(self):
-        for world_obj in self.game_world.map.config:
-            for entity in self.game_world.entities:
-                if world_obj.position == entity.pos:
-                    entity.pos = entity.prev_pos
-
-    def _draw_world(self):
-        for world_obj in self.game_world.map.config:
-            x, y = world_obj.position.x, world_obj.position.y
-            self.scr.display_symbol(x, y, world_obj.texture)
-
     def _draw_entities(self):
         for entity in self.game_world.entities:
             self.scr.draw(entity)
@@ -71,9 +60,18 @@ class Engine:
     def __do_tick(self) -> None:
         self.event_manager.tick()
         self._check_collision()
-        self._draw_world()
+
+        for world_object in self.game_world.map.config:
+            # handling world map collision
+            for entity in self.game_world.entities:
+                if world_object.position == entity.pos:
+                    entity.pos = entity.prev_pos
+
+            # drawing world objects
+            x, y = world_object.position.x, world_object.position.y
+            self.scr.display_symbol(x, y, world_object.texture)
+
         self._draw_entities()
-        self._check_world_map_collision()
         self.scr.update()
 
     def _launch_loop_handler(self) -> LaunchError:
