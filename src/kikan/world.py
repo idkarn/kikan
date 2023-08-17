@@ -20,9 +20,9 @@ class WorldMap:
 
 
 class World:
-    def __init__(self, map: WorldMap, entities: list[Entity] = []):
+    def __init__(self, map: WorldMap, entities: list[Entity] = None):
         self.map = map
-        self.entities = entities
+        self.entities = entities or []
         self.meta_entities = []
 
     def record_entity(self, entity: Entity):
