@@ -58,7 +58,7 @@ class Screen:
             self.display_symbol(x, y, symb, color)
 
     def get_key(self) -> str:
-        return self.scr.inkey(self.delay).lower()
+        return key.name[4:].lower() if (key := self.scr.inkey(self.delay)).is_sequence else key
 
     def clear(self) -> None:
         self.frame = [[" " for _ in range(self.size["width"])]
