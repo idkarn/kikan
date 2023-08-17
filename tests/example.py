@@ -1,5 +1,12 @@
 from kikan import engine, Entity, Vector
 from kikan.utils import Logger
+from kikan.entity import Texture, Pixel
+
+NPCTexture = Texture([
+    Pixel("N", (255, 0, 0), Vector(0, 0)),
+    Pixel("P", (0, 255, 0), Vector(0, 1)),
+    Pixel("C", (0, 0, 255), Vector(0, 2))
+])
 
 
 class Player(Entity):
@@ -30,7 +37,7 @@ class NPC(Entity):
             self.destroy()
 
 
-npc = NPC(Vector(0, 0), "NPC")
+npc = NPC(Vector(0, 0), NPCTexture)
 player = Player(Vector(0, 3), "P")
 
 engine.start()
