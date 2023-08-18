@@ -51,6 +51,8 @@ class Logger:
     HEADING_LENGTH = 70
 
     def __init__(self):
+        if 'logs' not in os.listdir():
+            os.mkdir('logs')
         logs = [int(f[6:-4]) for f in os.listdir('logs')
                 if f.startswith('group_') and f.endswith('.log') and f[6:-4].isdigit()]
         if not logs:
