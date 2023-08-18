@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from enum import Enum
 from time import sleep
 from typing import Callable
 
@@ -17,16 +16,9 @@ class EngineConfig:
     fps: float
 
 
-class EngineStates(Enum):
-    CREATED = 1
-    INITIALIZED = 2
-    STARTED = 3
-
-
 class Engine:
     # noinspection PyTypeChecker
     def __init__(self):  # start engine init phase to create all necessary objects
-        self.state = EngineStates.CREATED
         self.screen: Screen = None
         self.game_world: World = None
         self.loop: Loop = None
