@@ -87,22 +87,20 @@ EmptyObject = MetaEntity
 
 
 class Texture:
+    tiles: List[Pixel[Vector]]
+
     def __init__(self, pixels: List[List[Pixel[None | Vector]]] | List[Pixel[Vector]]):
-        if isinstance(pixels[0], Pixel):
-            # BUG: don't support negative numbers
+        if isinstance(pixels[0], list):
             self.tiles = []
-            for pixel in pixels:
-                pixels: Pixel[Vector]
-                x, y = pixel.position.x, pixel.position.y
-                if (l := len(self.tiles)) <= y:
-                    self.tiles.extend(
-                        [[] for i in range(y - l + 1)])
-                if (l := len(self.tiles[y])) <= x:
-                    self.tiles[y].extend(
-                        [None] * (x - l + 1))
-                self.tiles[y][x] = pixel
+            for y in range(len(pixels)):
+                pixel: Pixel[None | Vector]
+                for x in range(len(pixels[y])):
+                    if (pixel := pixels[y][x]) == None:
+                        continue
+                    pixel.position = Vector(x, y)
+                    self.tiles.append(pixel)
         else:
-            self.tiles: List[List[Pixel[None | Vector]]] = pixels
+            self.tiles = pixels
 
     def add_tile(self, pixel: Pixel[Vector]):
         x, y = pixel.position.x, pixel.position.y
