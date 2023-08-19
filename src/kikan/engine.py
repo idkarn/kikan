@@ -3,7 +3,7 @@ from typing import Callable
 
 
 from .events import EventManager
-from .world import World
+from .world import World, WorldMap
 from .errors import LaunchError
 from .screen import Screen
 from time import sleep
@@ -35,8 +35,8 @@ class Engine:
         self.scr = Screen(get_key_delay)
         self._launch_loop_handler()
 
-    def load_world(self, world: World) -> None:
-        self.game_world = world
+    def load_world_map(self, world_map: WorldMap) -> None:
+        self.game_world.map = world_map
 
     def _deinit(self):
         # TODO: dispatch DeInit event
@@ -55,7 +55,8 @@ class Engine:
 
     def _draw_entities(self):
         for entity in self.game_world.entities:
-            self.scr.draw(entity)
+            if not entity._is_hidden:
+                self.scr.draw(entity)
 
     def __do_tick(self) -> None:
         self.event_manager.tick()
@@ -75,11 +76,12 @@ class Engine:
         self.scr.update()
 
     def _launch_loop_handler(self) -> LaunchError:
-        try:
-            self.__do_tick()
-            sleep(1 / self.config.fps)
-            self._launch_loop_handler()
-        except Exception as ex:
-            self.scr.terminate_terminal()
-            self._deinit()
-            raise LaunchError() from ex
+        while True:
+            try:
+                self.__do_tick()
+                sleep(1 / self.config.fps)
+            except Exception as e:
+                self.scr.terminate_terminal()
+                self._deinit()
+                print(e)
+                exit()

@@ -30,7 +30,7 @@ class Entity:
         else:
             self.texture: Texture = texture
         self.prev_pos: Vector | None = None
-        self.__is_hidden: bool = False
+        self._is_hidden: bool = False
         self.__id: int = id(self)
         engine.game_world.record_entity(self)
 
@@ -65,10 +65,10 @@ class Entity:
         del self
 
     def hide(self):
-        self.__is_hidden = True
+        self._is_hidden = True
 
     def show(self):
-        self.__is_hidden = False
+        self._is_hidden = False
 
 
 class MetaEntity:
@@ -89,6 +89,7 @@ EmptyObject = MetaEntity
 class Texture:
     def __init__(self, pixels: List[List[Pixel[None | Vector]]] | List[Pixel[Vector]]):
         if isinstance(pixels[0], Pixel):
+            # BUG: don't support negative numbers
             self.tiles = []
             for pixel in pixels:
                 pixels: Pixel[Vector]
@@ -112,7 +113,7 @@ class Pixel(Generic[PositionType]):
     def __init__(self, symbol: str, color: RGBType | None = None, position: PositionType = None):
         if len(symbol) > 1:
             raise Exception("Only one character is allowed for pixel's symbol")
-        self.symbol: str = symbol[0]
+        self.symbol: str = symbol
         self.color: RGBType = color or (255, 255, 255)
         self.position: PositionType = position
 

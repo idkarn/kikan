@@ -37,8 +37,9 @@ class Screen:
         tiles = entity.texture.tiles
         for y in range(len(tiles)):
             for x in range(len(tiles[y])):
-                self.display_symbol(pivot.x - x, pivot.y - y,
-                                    tiles[y][x].symbol, tiles[y][x].color)
+                if tiles[y][x]:
+                    self.display_symbol(pivot.x + x, pivot.y - y,
+                                        tiles[y][x].symbol, tiles[y][x].color)
 
     def display_symbol(self, x: float, y: float, symbol: str, color: tuple[int, int, int] = (255, 255, 255)):
         x, y = round(x), round(y)

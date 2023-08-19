@@ -1,43 +1,193 @@
+from random import randint, random
+from time import time
 from kikan import engine, Entity, Vector
+from kikan.math import Vector
 from kikan.utils import Logger
-from kikan.entity import Texture, Pixel
+from kikan.entity import EmptyObject, Texture, Pixel
+from kikan.world import WorldMap, WorldObject
 
-NPCTexture = Texture([
-    Pixel("N", (255, 0, 0), Vector(0, 0)),
-    Pixel("P", (0, 255, 0), Vector(0, 1)),
-    Pixel("C", (0, 0, 255), Vector(0, 2))
+world_map = WorldMap([
+    WorldObject(Vector(-30, 10), "#"),
+
+    WorldObject(Vector(-31, 9), "#"),
+    WorldObject(Vector(-30, 9), "#"),
+    WorldObject(Vector(-29, 9), "#"),
+
+    WorldObject(Vector(-32, 8), "#"),
+    WorldObject(Vector(-31, 8), "#"),
+    WorldObject(Vector(-29, 8), "#"),
+    WorldObject(Vector(-28, 8), "#"),
+
+    WorldObject(Vector(-33, 7), "#"),
+    WorldObject(Vector(-32, 7), "#"),
+    WorldObject(Vector(-31, 7), "#"),
+    WorldObject(Vector(-30, 7), "#"),
+    WorldObject(Vector(-29, 7), "#"),
+    WorldObject(Vector(-28, 7), "#"),
+    WorldObject(Vector(-27, 7), "#"),
+
+    WorldObject(Vector(-32, 6), "#"),
+    WorldObject(Vector(-31, 6), "#"),
+    WorldObject(Vector(-29, 6), "#"),
+    WorldObject(Vector(-28, 6), "#"),
+
+    WorldObject(Vector(-32, 5), "#"),
+    WorldObject(Vector(-31, 5), "#"),
+    WorldObject(Vector(-29, 5), "#"),
+    WorldObject(Vector(-28, 5), "#")
 ])
 
 
 class Player(Entity):
+    def __init__(self):
+        super().__init__(Vector(0, 0), "P")
+        self.damage = 1
+        self.score = 10
+        self.is_attacking = False
+        self.timestamp = 0
+        self.direction = "left"
+
     def on_input(self, key):
         match key:
-            case "a":
-                self.step("left")
-            case "d":
-                self.step("right")
-            case "s":
-                self.step("down")
-            case "w":
-                self.step("up")
+            case "left":
+                self.move("left")
+                self.direction = "left"
+            case "right":
+                self.move("right")
+                self.direction = "right"
+            case "down":
+                self.move("down")
+            case "up":
+                self.move("up")
+            case " ":
+                self.is_attacking = True
+            case "q":
+                exit()
 
-
-class NPC(Entity):
-    is_right_direction = True
+    def move(self, dir):
+        self.step(dir)
+        sword.step(dir)
 
     def on_update(self):
-        if self.pos.x == 4:
-            self.is_right_direction = False
-        elif self.pos.x == -4:
-            self.is_right_direction = True
-        self.step("right" if self.is_right_direction else "left")
+        if self.timestamp + 5 <= (t := time()):
+            self.timestamp = t
+            self.is_attacking = False
+
+
+class Sword(Entity):
+    P1Texture = Texture([[None, None, Pixel("<", )]])
+    P2Texture = Texture([[None, Pixel("-"), Pixel("<")]])
+    P3Texture = Texture([[Pixel("-"), Pixel("-"), Pixel("<")]])
+    P1RTexture = Texture([[Pixel(">"), None, None]])
+    P2RTexture = Texture([[Pixel(">"), Pixel("-"), None]])
+    P3RTexture = Texture([[Pixel(">"), Pixel("-"), Pixel("-")]])
+
+    def __init__(self):
+        super().__init__(player.pos, self.P1Texture)
+        self._is_hidden = True
+        self.ticks = 0
+
+    def on_input(self, key):
+        if key == " ":
+            self.ticks = 0
+            self.show()
+
+    def on_update(self):
+        if player.direction == "right":
+            self.pos = player.pos + Vector(1, 0)
+        else:
+            self.pos = player.pos - Vector(3, 0)
+        match self.ticks:
+            case 2:
+                self.texture = self.P2Texture if player.direction == "left" else self.P2RTexture
+            case 4:
+                self.texture = self.P3Texture if player.direction == "left" else self.P3RTexture
+            case 6:
+                self.texture = self.P2Texture if player.direction == "left" else self.P2RTexture
+            case 8:
+                self.texture = self.P1Texture if player.direction == "left" else self.P1RTexture
+            case 10:
+                self.hide()
+        self.ticks += 1
+
+
+class Enemy(Entity):
+    to_destroy = False
+
+    def __init__(self, position: Vector, lvl) -> None:
+        match lvl:
+            case 1:
+                texture = Texture([[Pixel(f"{lvl}")]])
+                self.healh = 5
+            case 2:
+                texture = Texture([[Pixel(f"{lvl}", (255, 51, 153))]])
+                self.healh = 10
+            case 3:
+                texture = Texture([[Pixel(f"{lvl}", (255, 0, 0))]])
+                self.healh = 20
+        super().__init__(position, texture)
+
+    def on_collision(self, other):
+        if isinstance(other, Sword):
+            if not other._is_hidden:
+                self.healh -= player.damage
+
+    def on_update(self):
+        if self.healh <= 0:
+            self.to_destroy = True
+            player.score += 1
+            return
+        if random() >= 0.8:
+            if player.pos.x > self.pos.x:
+                self.step("right")
+            elif player.pos.x < self.pos.x:
+                self.step("left")
+            if player.pos.y > self.pos.y:
+                self.step("up")
+            elif player.pos.y < self.pos.y:
+                self.step("down")
+
+
+class Door(Entity):
+    def __init__(self) -> None:
+        super().__init__(Vector(-30, 5), Texture([[Pixel(" ")]]))
 
     def on_collision(self, other):
         if other is player:
-            self.destroy()
+            if other.score >= 10:
+                other.score -= 10
+                other.damage += 1
+                Logger.default.print(
+                    f"Damage was incrased to {player.damage}")
 
 
-npc = NPC(Vector(0, 0), NPCTexture)
-player = Player(Vector(0, 3), "P")
+class EnemiesManager(EmptyObject):
+    def on_update():
+        for enemy in list(enemies):
+            if enemy.to_destroy:
+                enemies.remove(enemy)
+                enemy.destroy()
+        if random() >= 0.98:
+            if (r := random()) >= 0.9:
+                lvl = 3
+            elif r >= 0.6:
+                lvl = 2
+            else:
+                lvl = 1
+            enemies.append(
+                Enemy(Vector(randint(-10, 10), randint(-10, 10)), lvl))
 
+
+class Stats(EmptyObject):
+    def on_update():
+        engine.scr.display_string(30, 10, f"{player.score} pts")
+        engine.scr.display_string(30, 9, f"{player.damage} dmg")
+
+
+player = Player()
+sword = Sword()
+door = Door()
+enemies: list[Enemy] = []
+
+engine.load_world_map(world_map)
 engine.start()
