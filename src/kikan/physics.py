@@ -12,4 +12,4 @@ class PhysicsEnvironment:
         self.config = PhysicsWorldConfig()
 
     def tick(self, entity: Entity):
-        entity.pos += entity.velocity
+        entity.position += entity.velocity

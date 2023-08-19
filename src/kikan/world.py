@@ -1,3 +1,6 @@
+from sortedcontainers import SortedDict
+
+from .entity import Entity
 from .math import Vector
 
 
@@ -13,6 +16,8 @@ class WorldMap:
 
 
 class World:
-    def __init__(self, map: WorldMap, entities):
-        self.entities = entities
-        self.map = map
+    def __init__(self, world_map: WorldMap, entities: list[Entity]):
+        self.entities = SortedDict()
+        for e in entities:
+            self.entities[id(e)] = e
+        self.map = world_map

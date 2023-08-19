@@ -23,7 +23,7 @@ i = 0
 def loop(fps=30):
     global i
     i += 1
-    eng.scr.draw_wireframe([
+    eng.screen.draw_wireframe([
         Vector(-20, 10, 20),
         Vector(-20, -9, 20),
         Vector(20, 10, 20),
