@@ -4,7 +4,6 @@ from datetime import datetime
 from inspect import isfunction
 
 from kikan.errors import LoggerInitializationError
-from kikan.events import InitEvent
 
 
 class ArgumentsHelper:
@@ -61,7 +60,8 @@ class Logger:
             self.lines_in_log = 0
         else:
             self.last_group_number = max(logs)
-            self.main_file = open(f'logs/group_{self.last_group_number}.log', 'r+')
+            self.main_file = open(
+                f'logs/group_{self.last_group_number}.log', 'r+')
             self.lines_in_log = len(self.main_file.readlines())
         self.check_log_overflow()
 
@@ -87,7 +87,8 @@ class Logger:
             self.main_file.close()
             self.lines_in_log = 0
             self.last_group_number += 1
-            self.main_file = open(f'logs/group_{self.last_group_number}.log', 'w')
+            self.main_file = open(
+                f'logs/group_{self.last_group_number}.log', 'w')
 
     # def _run_flush_event(self):
     #     while self._stop_event.wait(timeout=1):
@@ -118,8 +119,9 @@ class Logger:
         if self.first_print:
             self.first_print = False
             self.start_session()
-        msg = sep.join(args) + end
-        self.buffer.append(msg if hide_time_stamp else f"[{datetime.now().astimezone().isoformat()}] {msg}")
+        msg = sep.join([str(item) for item in args]) + end
+        self.buffer.append(
+            msg if hide_time_stamp else f"[{datetime.now().astimezone().isoformat()}] {msg}")
         # if not self.multithreading:
         self._flush()
 
@@ -129,17 +131,18 @@ class Logger:
     @staticmethod
     def print(*args, end='\n', sep=' ', hide_time_stamp=False):
         try:
-            Logger.default.print_(*args, end=end, sep=sep, hide_time_stamp=hide_time_stamp)
+            Logger.default.print_(*args, end=end, sep=sep,
+                                  hide_time_stamp=hide_time_stamp)
         except AttributeError:
             raise LoggerInitializationError
 
     def start_session(self):
         self.print_('=' * Logger.HEADING_LENGTH, hide_time_stamp=True)
         time_msg = ' ' + time.ctime() + ' '
-        self.print_(time_msg.center(Logger.HEADING_LENGTH, '='), hide_time_stamp=True)
+        self.print_(time_msg.center(Logger.HEADING_LENGTH, '='),
+                    hide_time_stamp=True)
         self.print_('=' * Logger.HEADING_LENGTH, hide_time_stamp=True)
 
-    @InitEvent
     @staticmethod
     def init():
         if hasattr(Logger, "default"):

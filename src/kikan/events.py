@@ -1,89 +1,43 @@
-from dataclasses import dataclass
-
-_events_index = {}
-_tracking_events: list[tuple[object, callable]] = []
-
-
-@dataclass
-class EventType:
-    name: str
-    description: str
-    code: int
-
-    def __init__(self, name: str, description: str) -> None:
-        self.name = name
-        self.description = description
-        self.code = len(_events_index)
-        _events_index[self.code] = self
-
-    @staticmethod
-    def get_event_by_code(code: int):
-        return _events_index[code]
+from __future__ import annotations
+from types import FunctionType
+from typing import Literal, TYPE_CHECKING, List, Any
+if TYPE_CHECKING:
+    from .entity import Entity
+    from .engine import Engine
 
 
-class EventBase:
-    TYPE = EventType(
-        "Primitive",
-        "Internal using only"
-    )
-
-    def __set_name__(self, owner, name):
-        setattr(owner, name, self.__wrapped_method)
-
-    def __init__(self, *args: list[callable], **kwargs: any) -> None:
-        if len(args) > 1:
-            raise ValueError()
-        elif len(args) == 1 and callable(args[0]):
-            self.__wrapped_method = args[0]
-            self._handle(args[0])
-        self.args = kwargs
-
-    def __call__(self, fn: callable) -> any:
-        self._handle(fn)
-        return fn
-
-    def _handle(self, fn: callable) -> None:
-        _tracking_events.append((self, fn))
-
-    @classmethod
-    def trigger(cls, fn: callable) -> callable:
-        def trigger_wrapper(*args, **kwargs):
-            # trigger event here
-            def check_events(event: tuple[EventBase, callable]):
-                if event[0].TYPE is cls.TYPE:
-                    return True
-            handled_funcs = filter(check_events, _tracking_events)
-            for handled_event, handled_func in handled_funcs:
-                handled_func()
-            # then call wrapped function
-            fn(*args, **kwargs)
-
-        return trigger_wrapper
+EventType = Literal["init", "pre_update",
+                    "update", "trigger", "collision", "input"]
+EventContext = List[Any]
 
 
-class InitEvent(EventBase):
-    TYPE = EventType(
-        "InitEvent",
-        "Event triggered on initialization phase"
-    )
+class EventManager:
+    def __init__(self, engine: Engine) -> None:
+        self.tracking_events = []
+        self.engine = engine  # link to engine instance
 
+    def add_event_listener(cls, fn: FunctionType) -> None:
+        cls.tracking_events.append(fn)
 
-class Input(EventBase):
-    TYPE = EventType(
-        "InputEvent",
-        "Event triggered when the key is pressed"
-    )
+    def handle_input(self):
+        pressed_key = self.engine.scr.get_key()
+        self.notify('input', [pressed_key])
 
+    def tick(self):
+        self.notify('pre_update')
+        for entity in self.engine.game_world.entities:
+            entity._update()
+        self.notify('update')
 
-class CreationEvent(EventBase):
-    TYPE = EventType(
-        "CreationEvent",
-        "Event triggered when the entity is created"
-    )
+        self.handle_input()
 
+    def notify(self, event: EventType, ctx: EventContext = []) -> None:
+        """Dispatches current event for all entities"""
+        for entity in self.engine.game_world.entities + self.engine.game_world.meta_entities:
+            self.dispatch(entity, event, ctx)
 
-class CollisionEvent(EventBase):
-    TYPE = EventType(
-        "CollisionEvent",
-        "Event triggered when the entity collides with another entity"
-    )
+    def dispatch(self, entity: Entity, event: EventType, ctx: EventContext = []):
+        """Calls entity's method for handling this event"""
+        method_name = f"on_{event}"
+        if hasattr(entity, method_name) and (method := getattr(entity, method_name)):
+            method(*ctx)
