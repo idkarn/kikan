@@ -211,8 +211,7 @@ class Door(Entity):
             if other.score >= 10:
                 other.score -= 10
                 other.damage += 1
-                Logger.default.print(
-                    f"Damage was incrased to {player.damage}")
+                Logger.print(f"Damage was incrased to {player.damage}")
 
 
 class EnemiesManager(EmptyObject):
@@ -234,8 +233,8 @@ class EnemiesManager(EmptyObject):
 
 class Stats(EmptyObject):
     def on_update():
-        engine.scr.display_string(30, 10, f"{player.score} pts")
-        engine.scr.display_string(30, 9, f"{player.damage} dmg")
+        engine.screen.display_string(30, 10, f"{player.score} pts")
+        engine.screen.display_string(30, 9, f"{player.damage} dmg")
 
 
 player = Player()

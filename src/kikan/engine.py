@@ -68,7 +68,7 @@ class Engine:
         for world_object in self.game_world.map.config:
             # handling world map collision
             for entity in self.game_world.entities:
-                if (world_object.position - entity.position).length() <= 1:
+                if (world_object.position - entity.position).length() <= 0.5:
                     entity.position = entity.prev_pos
                     entity.velocity = Vector(0, 0)
 
