@@ -1,4 +1,5 @@
 from kikan import engine, Entity, Vector
+from kikan.entity import StepSides
 from kikan.utils import Logger
 
 
@@ -6,24 +7,24 @@ class Player(Entity):
     def on_input(self, key):
         match key:
             case "a":
-                self.step("left")
+                self.step(StepSides.LEFT)
             case "d":
-                self.step("right")
+                self.step(StepSides.RIGHT)
             case "s":
-                self.step("down")
+                self.step(StepSides.DOWN)
             case "w":
-                self.step("up")
+                self.step(StepSides.UP)
 
 
 class NPC(Entity):
     is_right_direction = True
 
     def on_update(self):
-        if self.pos.x == 4:
+        if self.position.x == 4:
             self.is_right_direction = False
-        elif self.pos.x == -4:
+        elif self.position.x == -4:
             self.is_right_direction = True
-        self.step("right" if self.is_right_direction else "left")
+        self.step(StepSides.RIGHT if self.is_right_direction else StepSides.LEFT)
 
     def on_collision(self, other):
         if other is player:
