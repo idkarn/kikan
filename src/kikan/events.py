@@ -1,6 +1,8 @@
 from __future__ import annotations
 from types import FunctionType
 from typing import Literal, TYPE_CHECKING, List, Any
+
+from kikan.utils import Logger
 if TYPE_CHECKING:
     from .entity import Entity
     from .engine import Engine
@@ -20,8 +22,8 @@ class EventManager:
         cls.tracking_events.append(fn)
 
     def handle_input(self):
-        pressed_key = self.engine.screen.get_key()
-        self.notify('input', [pressed_key])
+        if pressed_key := self.engine.screen.get_key():
+            self.notify('input', [pressed_key])
 
     def tick(self):
         self.notify('pre_update')

@@ -7,4 +7,4 @@ if _typing.TYPE_CHECKING:
     ...
 
 engine = Engine()
-engine.game_world = _world.World(_world.WorldMap([]), [])
+engine.game_world = _world.World(_world.WorldMap([]))

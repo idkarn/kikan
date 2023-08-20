@@ -35,7 +35,11 @@ class Screen:
         print(data, end='', flush=False)
 
     def draw(self, entity: Entity):
-        self.display_string(entity.position.x, entity.position.y, entity.texture)
+        pivot = entity.position
+        tiles = entity.texture.tiles
+        for pixel in tiles:
+            coords = pivot + pixel.position
+            self.display_symbol(coords.x, coords.y, pixel.symbol, pixel.color)
 
     def display_symbol(self, x: float, y: float, symbol: str, color: tuple[int, int, int] = (255, 255, 255)):
         x, y = round(x), round(y)
@@ -56,7 +60,7 @@ class Screen:
             self.display_symbol(x, y, symb, color)
 
     def get_key(self) -> str:
-        return self.screen.inkey(self.delay).lower()
+        return key.name[4:].lower() if (key := self.screen.inkey(self.delay)).is_sequence else key
 
     def clear(self) -> None:
         self.frame = [[" " for _ in range(self.size["width"])]

@@ -38,8 +38,8 @@ class Engine:
         self.screen = Screen(get_key_delay)
         self._launch_loop_handler()
 
-    def load_world(self, world: World) -> None:
-        self.game_world = world
+    def load_world_map(self, world_map: WorldMap) -> None:
+        self.game_world.map = world_map
 
     def _terminate(self):
         # TODO: dispatch Terminate event
@@ -58,7 +58,8 @@ class Engine:
 
     def _draw_entities(self):
         for entity in self.game_world.entities:
-            self.screen.draw(entity)
+            if not entity._is_hidden:
+                self.screen.draw(entity)
 
     def __do_tick(self) -> None:
         self.event_manager.tick()
@@ -79,12 +80,12 @@ class Engine:
         self.screen.update()
 
     def _launch_loop_handler(self) -> LaunchError:
-        try:
-            self.__do_tick()
-            sleep(1 / self.config.fps)
-            self._launch_loop_handler()
-        except Exception as e:
-            Logger.print(repr(e))
-            self.screen.terminate_terminal()
-            self._terminate()
-            raise LaunchError() from e
+        while True:
+            try:
+                self.__do_tick()
+                sleep(1 / self.config.fps)
+            except Exception as e:
+                Logger.print(repr(e))
+                self.screen.terminate_terminal()
+                self._terminate()
+                raise LaunchError() from e

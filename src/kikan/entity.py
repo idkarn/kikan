@@ -1,7 +1,14 @@
+from __future__ import annotations
+
 import time
 from enum import Enum
+from typing import Generic, List, Tuple, TypeVar
 from .main import engine
 from .math import Vector
+
+
+RGBType = Tuple[int, int, int]
+PositionType = TypeVar("PositionType", None, Vector, None | Vector)
 
 
 class StepSides(Enum):
@@ -13,15 +20,18 @@ class StepSides(Enum):
 
 class Entity:
     # noinspection PyTypeChecker
-    def __init__(self, position: Vector, texture: str) -> None:
+    def __init__(self, position: Vector, texture: Texture | str) -> None:
         self.mass = 1
         self.position = position
         self.velocity = Vector(0, 0)
         self.acceleration = Vector(0, 0)
 
-        self.texture = texture
-        self.prev_pos: Vector = None
-        self.__is_hidden: bool = False
+        if isinstance(texture, str):
+            self.texture: Texture = Texture([[Pixel(texture)]])
+        else:
+            self.texture: Texture = texture
+        self.prev_pos: Vector | None = None
+        self._is_hidden: bool = False
         self.__id: int = id(self)
         engine.game_world.record_entity(self)
 
@@ -56,10 +66,10 @@ class Entity:
         del self
 
     def hide(self):
-        self.__is_hidden = True
+        self._is_hidden = True
 
     def show(self):
-        self.__is_hidden = False
+        self._is_hidden = False
 
 
 class MetaEntity:
@@ -73,4 +83,37 @@ class MetaEntity:
         del self
 
 
+# alias for MetaEntity
 EmptyObject = MetaEntity
+
+
+class Texture:
+    tiles: List[Pixel[Vector]]
+
+    def __init__(self, pixels: List[List[Pixel[None | Vector]]] | List[Pixel[Vector]]):
+        if isinstance(pixels[0], list):
+            self.tiles = []
+            for y in range(len(pixels)):
+                pixel: Pixel[None | Vector]
+                for x in range(len(pixels[y])):
+                    if (pixel := pixels[y][x]) == None:
+                        continue
+                    pixel.position = Vector(x, y)
+                    self.tiles.append(pixel)
+        else:
+            self.tiles = pixels
+
+    def add_tile(self, pixel: Pixel[Vector]):
+        self.tiles.append(pixel)
+
+
+class Pixel(Generic[PositionType]):
+    def __init__(self, symbol: str, color: RGBType | None = None, position: PositionType = None):
+        if len(symbol) > 1:
+            raise Exception("Only one character is allowed for pixel's symbol")
+        self.symbol: str = symbol
+        self.color: RGBType = color or (255, 255, 255)
+        self.position: PositionType = position
+
+    def __repr__(self) -> str:
+        return f'<Pixel for "{self.symbol}" of {self.color} at {self.position}>'

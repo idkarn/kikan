@@ -89,12 +89,6 @@ class Vector:
         return new_vertex
 
 
-#! DEPRECATED
-class Edge:
-    def __init__(self, start: Vector, end: Vector) -> None:
-        self.start, self.end = start, end
-
-
 class Matrix:
     @staticmethod
     def multiply(a: list[list], b: list[list]) -> list[list]:
