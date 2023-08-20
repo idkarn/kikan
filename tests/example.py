@@ -38,14 +38,26 @@ world_map = WorldMap([
 ])
 
 
+def find_directions_to_target(source: Entity, target: Entity):
+    h, v = "", ""
+    if target.pos.x > source.pos.x:
+        h = "right"
+    elif target.pos.x < source.pos.x:
+        h = "left"
+    if target.pos.y > source.pos.y:
+        v = "up"
+    elif target.pos.y < source.pos.y:
+        v = "down"
+    return h, v
+
+
 class Player(Entity):
     def __init__(self):
         super().__init__(Vector(0, 0), "P")
         self.damage = 1
         self.score = 10
-        self.is_attacking = False
-        self.timestamp = 0
         self.direction = "left"
+        self.weapon = "sword"
 
     def on_input(self, key):
         match key:
@@ -59,19 +71,24 @@ class Player(Entity):
                 self.move("down")
             case "up":
                 self.move("up")
-            case " ":
-                self.is_attacking = True
+            case "1":
+                self.weapon = "sword"
+            case "2":
+                self.weapon = "boomerang"
             case "q":
                 exit()
+
+    def on_collision(self, other):
+        if isinstance(other, Enemy):
+            player.score = 0
+            player.damage = 1
+            player.pos = Vector(0, 0)
+            for enemy in enemies:
+                enemy.to_destroy = True
 
     def move(self, dir):
         self.step(dir)
         sword.step(dir)
-
-    def on_update(self):
-        if self.timestamp + 5 <= (t := time()):
-            self.timestamp = t
-            self.is_attacking = False
 
 
 class Sword(Entity):
@@ -88,7 +105,7 @@ class Sword(Entity):
         self.ticks = 0
 
     def on_input(self, key):
-        if key == " ":
+        if self._is_hidden and player.weapon == "sword" and key == " ":
             self.ticks = 0
             self.show()
 
@@ -111,6 +128,49 @@ class Sword(Entity):
         self.ticks += 1
 
 
+class Boomerang(Entity):
+    P1Texture = Texture([[Pixel("+")]])
+    P2Texture = Texture([[Pixel("X")]])
+
+    def __init__(self):
+        super().__init__(player.pos, "+")
+        self.dir = "left"
+        self._is_hidden = True
+        self.ticks = 0
+        self.is_at_start = True
+
+    def on_input(self, key):
+        if self._is_hidden and player.weapon == "boomerang" and key == " ":
+            self.dir = player.direction
+            if self.dir == "left":
+                self.pos = player.pos - Vector(1, 0)
+            else:
+                self.pos = player.pos + Vector(1, 0)
+            self.is_at_start = True
+            self.show()
+            self.ticks = 0
+
+    def on_update(self):
+        if self.ticks % 2 == 0:
+            self.texture = self.P1Texture
+        else:
+            self.texture = self.P2Texture
+
+        if self.ticks == 1:
+            self.is_at_start = False
+        elif self.ticks == 10:
+            self.dir = "right" if self.dir == "left" else "left"
+        elif self.ticks >= 20:
+            self.hide()
+
+        self.step(self.dir)
+        self.ticks += 1
+
+    def on_collision(self, other):
+        if isinstance(other, Player) and not self.is_at_start:
+            self.hide()
+
+
 class Enemy(Entity):
     to_destroy = False
 
@@ -128,7 +188,7 @@ class Enemy(Entity):
         super().__init__(position, texture)
 
     def on_collision(self, other):
-        if isinstance(other, Sword):
+        if isinstance(other, (Sword, Boomerang)):
             if not other._is_hidden:
                 self.healh -= player.damage
 
@@ -138,14 +198,9 @@ class Enemy(Entity):
             player.score += 1
             return
         if random() >= 0.8:
-            if player.pos.x > self.pos.x:
-                self.step("right")
-            elif player.pos.x < self.pos.x:
-                self.step("left")
-            if player.pos.y > self.pos.y:
-                self.step("up")
-            elif player.pos.y < self.pos.y:
-                self.step("down")
+            horizontal, vertical = find_directions_to_target(self, player)
+            self.step(horizontal)
+            self.step(vertical)
 
 
 class Door(Entity):
@@ -186,6 +241,7 @@ class Stats(EmptyObject):
 
 player = Player()
 sword = Sword()
+boomerang = Boomerang()
 door = Door()
 enemies: list[Enemy] = []
 
