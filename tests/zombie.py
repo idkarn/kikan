@@ -1,5 +1,7 @@
 from random import randint
-from kikan import Engine, World, Entity, Loop, InitEvent, Input, WorldMap, WorldObject, Vector, CollisionEvent
+
+from kikan import World, Entity, Loop, InitEvent, Input, WorldMap, WorldObject, CollisionEvent, engine
+from kikan.entity import StepSides
 from kikan.math import Vector
 
 world = World(WorldMap([
@@ -9,69 +11,72 @@ world = World(WorldMap([
     WorldObject(Vector(-2, 2), "#"),
     WorldObject(Vector(-2, 3), "#"),
     WorldObject(Vector(-3, 2), "#"),
-]), [])
-e = Engine(world)
+]), {})
 
-score: int = 0
+engine.init(world)
 
 
 class Player(Entity):
-    def __init__(self, pos: Vector, texture: str, dir: str):
+    def __init__(self, pos: Vector, texture: str, direction: StepSides):
         super().__init__(pos, texture)
-        self.dir = dir
+        self.direction = direction
+        self.score = 0
 
     @CollisionEvent
     def collide(self):
-        global score
-        score = -1
+        self.score = -1
 
 
 class Zombie(Entity):
     def respawn(self):
-        self.pos = Vector(randint(-10, 10), randint(-10, 10))
+        self.position = Vector(randint(-10, 10), randint(-10, 10))
 
     @CollisionEvent
     def collide(self):
-        global score
         bullet.destroy()
         self.respawn()
-        score += 1
+        player.score += 1
 
     def move(self):
-        if player.pos.x > self.pos.x:
-            self.step("right")
-        elif player.pos.x < self.pos.x:
-            self.step("left")
-        if player.pos.y > self.pos.y:
-            self.step("up")
-        elif player.pos.y < self.pos.y:
-            self.step("down")
+        if player.position.x > self.position.x:
+            self.step(StepSides.RIGHT)
+        elif player.position.x < self.position.x:
+            self.step(StepSides.LEFT)
+        if player.position.y > self.position.y:
+            self.step(StepSides.UP)
+        elif player.position.y < self.position.y:
+            self.step(StepSides.DOWN)
 
 
 class Bullet(Entity):
-    def __init__(self, position: Vector, texture: str, dir: str) -> None:
+    def __init__(self, position: Vector, texture: str, direction: StepSides) -> None:
         super().__init__(position, texture)
-        self.dir = dir
+        self.direction = direction
 
     def move(self):
-        self.step(self.dir)
+        self.step(self.direction)
 
 
+# noinspection PyTypeChecker
 player: Player = None
+# noinspection PyTypeChecker
 zombie: Zombie = None
+# noinspection PyTypeChecker
 bullet: Bullet = None
 
 
 def print_score():
-    size = e.scr.size
+    size = engine.screen.size
     coords = (-(size["width"] // 2 - 1), size["height"] // 2 - 1)
-    e.scr.display_string(*coords, f"Score: {score}", (0, 255, 0))
+    engine.screen.display_string(*coords, f"Score: {player.score}", (0, 255, 0))
 
 
 @InitEvent
 def init():
     global player, zombie, bullet
-    player = Player(Vector(0, 0), "@>", "right")
+    # player = Player(Vector(0, 0), "@>", StepSides.RIGHT)
+    # BUG: screen moves if a texture contains more than one symbol
+    player = Player(Vector(0, 0), "@", StepSides.RIGHT)
     zombie = Zombie(Vector(-10, 10), "Z")
 
 
@@ -79,48 +84,48 @@ def init():
 def loop():
     if randint(0, 2) == 2:
         zombie.move()
-    e.scr.draw(player)
-    e.scr.draw(zombie)
+    engine.screen.draw(player)
+    engine.screen.draw(zombie)
     if bullet:
         bullet.move()
-        e.scr.draw(bullet)
+        engine.screen.draw(bullet)
     print_score()
 
 
 @Input(key=" ")
 def shoot():
     global bullet
-    dx = 2 if player.dir == "right" else -2
-    bullet = Bullet(Vector(player.pos.x + dx, player.pos.y), "-", player.dir)
+    dx = 2 if player.direction == StepSides.RIGHT else -2
+    bullet = Bullet(Vector(player.position.x + dx, player.position.y), "-", player.direction)
 
 
 @Input(key="right")
 def right():
     player.texture = "@>"
-    player.dir = "right"
-    player.step("right")
+    player.direction = StepSides.RIGHT
+    player.step(StepSides.RIGHT)
 
 
 @Input(key="left")
 def left():
     player.texture = "<@"
-    player.dir = "left"
-    player.step("left")
+    player.direction = StepSides.LEFT
+    player.step(StepSides.LEFT)
 
 
 @Input(key="down")
 def down():
-    player.step("down")
+    player.step(StepSides.DOWN)
 
 
 @Input(key="up")
 def up():
-    player.step("up")
+    player.step(StepSides.UP)
 
 
 @Input(key="q")
-def quit():
+def quit_():
     exit()
 
 
-e.start()
+engine.start()

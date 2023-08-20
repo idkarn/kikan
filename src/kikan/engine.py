@@ -1,13 +1,13 @@
 from dataclasses import dataclass
+from time import sleep
 from typing import Callable
 
-
-from .events import EventManager
-from .world import World
-from .errors import LaunchError
-from .screen import Screen
-from time import sleep
+from .math import Vector
 from .utils import Logger
+from .errors import LaunchError
+from .events import EventManager
+from .screen import Screen
+from .world import World, WorldMap
 
 
 @dataclass
@@ -16,15 +16,18 @@ class EngineConfig:
 
 
 class Engine:
-    def __init__(self, world: World) -> None:
-        self.game_world = world
+    # noinspection PyTypeChecker
+    def __init__(self):  # start engine init phase to create all necessary objects
+        self.screen: Screen = None
+        self.game_world: World = World(WorldMap([]))
         self._init_hooks: list[Callable[[], None]] = []
-        self._deinit_hooks: list[Callable[[], None]] = []
+        self._terminate_hooks: list[Callable[[], None]] = []
         self.event_manager = EventManager(self)
         self.config = EngineConfig()
         Logger.init()
 
-    def init(self) -> None:  # start engine init phase to create all necessary objects
+    #! deprecated
+    def init(self) -> None:
         ...
 
     def setup(self, config: EngineConfig) -> None:
@@ -32,22 +35,22 @@ class Engine:
 
     def start(self) -> None:
         get_key_delay = 1 / self.config.fps
-        self.scr = Screen(get_key_delay)
+        self.screen = Screen(get_key_delay)
         self._launch_loop_handler()
 
     def load_world(self, world: World) -> None:
         self.game_world = world
 
-    def _deinit(self):
-        # TODO: dispatch DeInit event
-        pass
+    def _terminate(self):
+        # TODO: dispatch Terminate event
+        Logger.terminate()
 
     def _check_collision(self):
         for i in range(len(self.game_world.entities)):
             for j in range(i+1, len(self.game_world.entities)):
                 entity1 = self.game_world.entities[i]
                 entity2 = self.game_world.entities[j]
-                if (entity1.pos - entity2.pos).length() <= 1:
+                if (entity1.position - entity2.position).length() <= 1:
                     self.event_manager.dispatch(
                         entity1, 'collision', [entity2])
                     self.event_manager.dispatch(
@@ -55,7 +58,7 @@ class Engine:
 
     def _draw_entities(self):
         for entity in self.game_world.entities:
-            self.scr.draw(entity)
+            self.screen.draw(entity)
 
     def __do_tick(self) -> None:
         self.event_manager.tick()
@@ -64,22 +67,24 @@ class Engine:
         for world_object in self.game_world.map.config:
             # handling world map collision
             for entity in self.game_world.entities:
-                if world_object.position == entity.pos:
-                    entity.pos = entity.prev_pos
+                if (world_object.position - entity.position).length() <= 1:
+                    entity.position = entity.prev_pos
+                    entity.velocity = Vector(0, 0)
 
             # drawing world objects
             x, y = world_object.position.x, world_object.position.y
-            self.scr.display_symbol(x, y, world_object.texture)
+            self.screen.display_symbol(x, y, world_object.texture)
 
         self._draw_entities()
-        self.scr.update()
+        self.screen.update()
 
     def _launch_loop_handler(self) -> LaunchError:
         try:
             self.__do_tick()
             sleep(1 / self.config.fps)
             self._launch_loop_handler()
-        except Exception as ex:
-            self.scr.terminate_terminal()
-            self._deinit()
-            raise LaunchError() from ex
+        except Exception as e:
+            Logger.print(repr(e))
+            self.screen.terminate_terminal()
+            self._terminate()
+            raise LaunchError() from e
