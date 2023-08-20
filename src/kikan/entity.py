@@ -103,8 +103,7 @@ class Texture:
             self.tiles = pixels
 
     def add_tile(self, pixel: Pixel[Vector]):
-        x, y = pixel.position.x, pixel.position.y
-        self.tiles[y][x] = pixel
+        self.tiles.append(pixel)
 
 
 class Pixel(Generic[PositionType]):
