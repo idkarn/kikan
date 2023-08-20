@@ -6,6 +6,8 @@ if typing.TYPE_CHECKING:
     from .entity import Entity
 # typing setting up
 
+from sortedcontainers import SortedDict
+
 
 class WorldObject:
     def __init__(self, position: Vector, texture: str):
@@ -22,7 +24,7 @@ class WorldMap:
 class World:
     def __init__(self, map: WorldMap, entities: list[Entity] = None):
         self.map = map
-        self.entities = entities or []
+        self.entities = entities or []  # TODO: replace list with SortedDict
         self.meta_entities = []
 
     def record_entity(self, entity: Entity):

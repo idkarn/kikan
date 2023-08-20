@@ -1,17 +1,17 @@
 from __future__ import annotations
 
 import time
-from .math import Vector
-from .main import engine
 from enum import Enum
 from typing import Generic, List, Tuple, TypeVar
+from .main import engine
+from .math import Vector
 
 
 RGBType = Tuple[int, int, int]
 PositionType = TypeVar("PositionType", None, Vector, None | Vector)
 
 
-class STEP_SIDE(Enum):
+class StepSides(Enum):
     LEFT = "left"
     RIGHT = "right"
     UP = "up"
@@ -19,11 +19,12 @@ class STEP_SIDE(Enum):
 
 
 class Entity:
+    # noinspection PyTypeChecker
     def __init__(self, position: Vector, texture: Texture | str) -> None:
         self.mass = 1
-        self.pos = position
+        self.position = position
         self.velocity = Vector(0, 0)
-        self.accel = Vector(0, 0)
+        self.acceleration = Vector(0, 0)
 
         if isinstance(texture, str):
             self.texture: Texture = Texture([[Pixel(texture)]])
@@ -37,28 +38,28 @@ class Entity:
         self.__prev_timestamp: float = time.time()
 
     def _update(self):
-        self.prev_pos = Vector(self.pos.x, self.pos.y)
+        self.prev_pos = Vector(self.position.x, self.position.y)
 
         dt = time.time() - self.__prev_timestamp
-        self.velocity += self.accel * dt
-        self.accel = Vector(0, 0)
-        self.pos += self.velocity * dt
+        self.velocity += self.acceleration * dt
+        self.acceleration = Vector(0, 0)
+        self.position += self.velocity * dt
 
         self.__prev_timestamp = time.time()
 
     def apply_force(self, force: Vector):
-        self.accel += force / self.mass
+        self.acceleration += force / self.mass
 
-    def step(self, side: STEP_SIDE):
+    def step(self, side: StepSides):
         match side:
-            case STEP_SIDE.LEFT.value:
-                self.pos.x -= 1
-            case STEP_SIDE.RIGHT.value:
-                self.pos.x += 1
-            case STEP_SIDE.DOWN.value:
-                self.pos.y -= 1
-            case STEP_SIDE.UP.value:
-                self.pos.y += 1
+            case StepSides.LEFT:
+                self.position.x -= 1
+            case StepSides.RIGHT:
+                self.position.x += 1
+            case StepSides.DOWN:
+                self.position.y -= 1
+            case StepSides.UP:
+                self.position.y += 1
 
     def destroy(self):
         engine.game_world.entities.remove(self)

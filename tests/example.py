@@ -1,9 +1,8 @@
 from random import randint, random
 from time import time
 from kikan import engine, Entity, Vector
-from kikan.math import Vector
 from kikan.utils import Logger
-from kikan.entity import EmptyObject, Texture, Pixel
+from kikan.entity import EmptyObject, Texture, Pixel, StepSides
 from kikan.world import WorldMap, WorldObject
 
 world_map = WorldMap([
@@ -40,14 +39,14 @@ world_map = WorldMap([
 
 def find_directions_to_target(source: Entity, target: Entity):
     h, v = "", ""
-    if target.pos.x > source.pos.x:
-        h = "right"
-    elif target.pos.x < source.pos.x:
-        h = "left"
-    if target.pos.y > source.pos.y:
-        v = "up"
-    elif target.pos.y < source.pos.y:
-        v = "down"
+    if target.position.x > source.position.x:
+        h = StepSides.RIGHT
+    elif target.position.x < source.position.x:
+        h = StepSides.LEFT
+    if target.position.y > source.position.y:
+        v = StepSides.UP
+    elif target.position.y < source.position.y:
+        v = StepSides.DOWN
     return h, v
 
 
@@ -62,15 +61,15 @@ class Player(Entity):
     def on_input(self, key):
         match key:
             case "left":
-                self.move("left")
+                self.move(StepSides.LEFT)
                 self.direction = "left"
             case "right":
-                self.move("right")
+                self.move(StepSides.RIGHT)
                 self.direction = "right"
             case "down":
-                self.move("down")
+                self.move(StepSides.DOWN)
             case "up":
-                self.move("up")
+                self.move(StepSides.UP)
             case "1":
                 self.weapon = "sword"
             case "2":
@@ -82,7 +81,7 @@ class Player(Entity):
         if isinstance(other, Enemy):
             player.score = 0
             player.damage = 1
-            player.pos = Vector(0, 0)
+            player.position = Vector(0, 0)
             for enemy in enemies:
                 enemy.to_destroy = True
 
@@ -100,7 +99,7 @@ class Sword(Entity):
     P3RTexture = Texture([[Pixel(">"), Pixel("-"), Pixel("-")]])
 
     def __init__(self):
-        super().__init__(player.pos, self.P1Texture)
+        super().__init__(player.position, self.P1Texture)
         self._is_hidden = True
         self.ticks = 0
 
@@ -111,9 +110,9 @@ class Sword(Entity):
 
     def on_update(self):
         if player.direction == "right":
-            self.pos = player.pos + Vector(1, 0)
+            self.position = player.position + Vector(1, 0)
         else:
-            self.pos = player.pos - Vector(3, 0)
+            self.position = player.position - Vector(3, 0)
         match self.ticks:
             case 2:
                 self.texture = self.P2Texture if player.direction == "left" else self.P2RTexture
@@ -133,7 +132,7 @@ class Boomerang(Entity):
     P2Texture = Texture([[Pixel("X")]])
 
     def __init__(self):
-        super().__init__(player.pos, "+")
+        super().__init__(player.position, "+")
         self.dir = "left"
         self._is_hidden = True
         self.ticks = 0
@@ -143,9 +142,9 @@ class Boomerang(Entity):
         if self._is_hidden and player.weapon == "boomerang" and key == " ":
             self.dir = player.direction
             if self.dir == "left":
-                self.pos = player.pos - Vector(1, 0)
+                self.position = player.position - Vector(1, 0)
             else:
-                self.pos = player.pos + Vector(1, 0)
+                self.position = player.position + Vector(1, 0)
             self.is_at_start = True
             self.show()
             self.ticks = 0
@@ -163,7 +162,7 @@ class Boomerang(Entity):
         elif self.ticks >= 20:
             self.hide()
 
-        self.step(self.dir)
+        self.step(StepSides.RIGHT if self.dir == "right" else StepSides.LEFT)
         self.ticks += 1
 
     def on_collision(self, other):

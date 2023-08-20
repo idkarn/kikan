@@ -22,7 +22,7 @@ class EventManager:
         cls.tracking_events.append(fn)
 
     def handle_input(self):
-        if pressed_key := self.engine.scr.get_key():
+        if pressed_key := self.engine.screen.get_key():
             self.notify('input', [pressed_key])
 
     def tick(self):
