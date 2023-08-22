@@ -62,8 +62,7 @@ class Entity:
                 self.position.y += 1
 
     def destroy(self):
-        engine.game_world.entities.remove(self)
-        del self
+        del engine.game_world.entities[id(self)]
 
     def hide(self):
         self._is_hidden = True

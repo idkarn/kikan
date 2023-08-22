@@ -27,7 +27,7 @@ class EventManager:
 
     def tick(self):
         self.notify('pre_update')
-        for entity in self.engine.game_world.entities:
+        for entity in self.engine.game_world.entities.values():
             entity._update()
         self.notify('update')
 
@@ -35,7 +35,7 @@ class EventManager:
 
     def notify(self, event: EventType, ctx: EventContext = []) -> None:
         """Dispatches current event for all entities"""
-        for entity in self.engine.game_world.entities + self.engine.game_world.meta_entities:
+        for entity in self.engine.game_world.entities.values() + self.engine.game_world.meta_entities:
             self.dispatch(entity, event, ctx)
 
     def dispatch(self, entity: Entity, event: EventType, ctx: EventContext = []):
