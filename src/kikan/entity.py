@@ -33,6 +33,7 @@ class Entity:
         self.prev_pos: Vector | None = None
         self._is_hidden: bool = False
         self.__id: int = id(self)
+        self._is_destroyed = False
         engine.game_world.record_entity(self)
 
         self.__prev_timestamp: float = time.time()
@@ -62,7 +63,7 @@ class Entity:
                 self.position.y += 1
 
     def destroy(self):
-        del engine.game_world.entities[id(self)]
+        self._is_destroyed = True
 
     def hide(self):
         self._is_hidden = True
@@ -75,11 +76,12 @@ class MetaEntity:
     """A class for game objects that have no instances of their own. These subclasses can handle events like the other entities."""
 
     def __init_subclass__(cls) -> None:
+        cls._is_destroyed = False
         engine.game_world.meta_entities.append(cls)
 
-    def destroy(self):
-        engine.game_world.meta_entities.remove(self)
-        del self
+    @classmethod
+    def destroy(cls):
+        cls._is_destroyed = True
 
 
 # alias for MetaEntity
