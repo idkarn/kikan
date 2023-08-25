@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from time import sleep
-from typing import Callable
+from typing import Callable, List
 
 from .math import Vector
 from .utils import Logger
@@ -56,6 +56,12 @@ class Engine:
                     self.event_manager.dispatch(
                         entity2, 'collision', [entity1])
 
+    def _remove_destroyed_entities(self):
+        self.game_world.entities = list(
+            filter(lambda x: not x._is_destroyed, self.game_world.entities))
+        self.game_world.meta_entities = list(
+            filter(lambda x: not x._is_destroyed, self.game_world.meta_entities))
+
     def _draw_entities(self):
         for entity in self.game_world.entities:
             if not entity._is_hidden:
@@ -76,6 +82,7 @@ class Engine:
             x, y = world_object.position.x, world_object.position.y
             self.screen.display_symbol(x, y, world_object.texture)
 
+        self._remove_destroyed_entities()
         self._draw_entities()
         self.screen.update()
 
