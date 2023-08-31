@@ -33,13 +33,19 @@ class EventManager:
 
         self.handle_input()
 
-    def notify(self, event: EventType, ctx: EventContext = []) -> None:
+    def notify(self, event: EventType, ctx=None) -> None:
         """Dispatches current event for all entities"""
-        for entity in self.engine.game_world.entities.values() + self.engine.game_world.meta_entities:
+        if ctx is None:
+            ctx = []
+        for entity in self.engine.game_world.entities.values():
+            self.dispatch(entity, event, ctx)
+        for entity in self.engine.game_world.meta_entities.values():
             self.dispatch(entity, event, ctx)
 
-    def dispatch(self, entity: Entity, event: EventType, ctx: EventContext = []):
+    def dispatch(self, entity: Entity, event: EventType, ctx=None):
         """Calls entity's method for handling this event"""
+        if ctx is None:
+            ctx = []
         method_name = f"on_{event}"
         if hasattr(entity, method_name) and (method := getattr(entity, method_name)):
             method(*ctx)

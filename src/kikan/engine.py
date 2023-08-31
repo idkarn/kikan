@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from time import sleep
-from typing import Callable, List
+from typing import Callable
 
 from .math import Vector
 from .utils import Logger
@@ -46,7 +46,7 @@ class Engine:
         Logger.terminate()
 
     def _check_collision(self):
-        entities = list(self.game_world.entities)
+        entities = list(self.game_world.entities.values())
         for i in range(len(entities)):
             for j in range(i+1, len(entities)):
                 entity1 = entities[i]
@@ -58,10 +58,12 @@ class Engine:
                         entity2, 'collision', [entity1])
 
     def _remove_destroyed_entities(self):
-        self.game_world.entities = list(
-            filter(lambda x: not x._is_destroyed, self.game_world.entities))
-        self.game_world.meta_entities = list(
-            filter(lambda x: not x._is_destroyed, self.game_world.meta_entities))
+        for key, value in reversed(self.game_world.entities.items()):
+            if value._is_destroyed:
+                del self.game_world.entities[key]
+        for key, value in reversed(self.game_world.meta_entities.items()):
+            if value._is_destroyed:
+                del self.game_world.meta_entities[key]
 
     def _draw_entities(self):
         for entity in self.game_world.entities.values():
