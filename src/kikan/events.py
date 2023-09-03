@@ -33,7 +33,7 @@ class EventManager:
 
         self.handle_input()
 
-    def notify(self, event: EventType, ctx=None) -> None:
+    def notify(self, event: EventType, ctx: EventContext = None) -> None:
         """Dispatches current event for all entities"""
         if ctx is None:
             ctx = []
@@ -42,7 +42,7 @@ class EventManager:
         for entity in self.engine.game_world.meta_entities.values():
             self.dispatch(entity, event, ctx)
 
-    def dispatch(self, entity: Entity, event: EventType, ctx=None):
+    def dispatch(self, entity: Entity, event: EventType, ctx: EventContext = None):
         """Calls entity's method for handling this event"""
         if ctx is None:
             ctx = []
