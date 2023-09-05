@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from time import sleep
-from typing import Callable, List
+from typing import Callable
 
 from .math import Vector
 from .utils import Logger
@@ -46,10 +46,11 @@ class Engine:
         Logger.terminate()
 
     def _check_collision(self):
-        for i in range(len(self.game_world.entities)):
-            for j in range(i+1, len(self.game_world.entities)):
-                entity1 = self.game_world.entities[i]
-                entity2 = self.game_world.entities[j]
+        entities = list(self.game_world.entities.values())
+        for i in range(len(entities)):
+            for j in range(i+1, len(entities)):
+                entity1 = entities[i]
+                entity2 = entities[j]
                 if (entity1.position - entity2.position).length() <= 1:
                     self.event_manager.dispatch(
                         entity1, 'collision', [entity2])
@@ -57,13 +58,15 @@ class Engine:
                         entity2, 'collision', [entity1])
 
     def _remove_destroyed_entities(self):
-        self.game_world.entities = list(
-            filter(lambda x: not x._is_destroyed, self.game_world.entities))
-        self.game_world.meta_entities = list(
-            filter(lambda x: not x._is_destroyed, self.game_world.meta_entities))
+        for key, value in reversed(self.game_world.entities.items()):
+            if value._is_destroyed:
+                del self.game_world.entities[key]
+        for key, value in reversed(self.game_world.meta_entities.items()):
+            if value._is_destroyed:
+                del self.game_world.meta_entities[key]
 
     def _draw_entities(self):
-        for entity in self.game_world.entities:
+        for entity in self.game_world.entities.values():
             if not entity._is_hidden:
                 self.screen.draw(entity)
 
@@ -73,7 +76,7 @@ class Engine:
 
         for world_object in self.game_world.map.config:
             # handling world map collision
-            for entity in self.game_world.entities:
+            for entity in self.game_world.entities.values():
                 if (world_object.position - entity.position).length() <= 0.5:
                     entity.position = entity.prev_pos
                     entity.velocity = Vector(0, 0)
@@ -86,7 +89,7 @@ class Engine:
         self._draw_entities()
         self.screen.update()
 
-    def _launch_loop_handler(self) -> LaunchError:
+    def _launch_loop_handler(self) -> None:
         while True:
             try:
                 self.__do_tick()

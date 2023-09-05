@@ -22,14 +22,17 @@ class WorldMap:
 
 
 class World:
-    def __init__(self, map: WorldMap, entities: list[Entity] = None):
-        self.map = map
-        self.entities = entities or []  # TODO: replace list with SortedDict
-        self.meta_entities = []
+    def __init__(self, world_map: WorldMap, entities: list[Entity] = None):
+        if entities is None:
+            entities = []
+        self.map = world_map
+        self.entities: SortedDict[int, Entity] = SortedDict()
+        for e in entities:
+            self.entities[id(e)] = e
+        self.meta_entities: SortedDict[int, Entity] = SortedDict()
 
     def record_entity(self, entity: Entity):
-        if entity not in self.entities:
-            self.entities.append(entity)
+        self.entities[id(entity)] = entity
 
     def place(self, position: Vector, texture: str):
         self.map.config.append(WorldObject(position, texture))

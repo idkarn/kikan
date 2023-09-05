@@ -73,11 +73,12 @@ class Entity:
 
 
 class MetaEntity:
-    """A class for game objects that have no instances of their own. These subclasses can handle events like the other entities."""
+    """A class for game objects that have no instances of their own. These subclasses can handle events like the
+    other entities."""
 
     def __init_subclass__(cls) -> None:
         cls._is_destroyed = False
-        engine.game_world.meta_entities.append(cls)
+        engine.game_world.meta_entities[id(cls)] = cls
 
     @classmethod
     def destroy(cls):
