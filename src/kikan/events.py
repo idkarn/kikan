@@ -1,4 +1,5 @@
 from __future__ import annotations
+from time import time
 from types import FunctionType
 from typing import Literal, TYPE_CHECKING, List, Any
 
@@ -17,6 +18,7 @@ class EventManager:
     def __init__(self, engine: Engine) -> None:
         self.tracking_events = []
         self.engine = engine  # link to engine instance
+        self._previous_timestamp = time()
 
     def add_event_listener(cls, fn: FunctionType) -> None:
         cls.tracking_events.append(fn)
@@ -26,12 +28,15 @@ class EventManager:
             self.notify('input', [pressed_key])
 
     def tick(self):
-        self.notify('pre_update')
+        dt = time() - self._previous_timestamp
+        self.notify('pre_update', [dt])
         for entity in self.engine.game_world.entities:
             entity._update()
-        self.notify('update')
+        self.notify('update', [dt])
 
         self.handle_input()
+
+        self._previous_timestamp = time()
 
     def notify(self, event: EventType, ctx: EventContext = []) -> None:
         """Dispatches current event for all entities"""

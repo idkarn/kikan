@@ -11,7 +11,7 @@ from os import get_terminal_size
 
 class Screen:
     def __init__(self, delay) -> None:
-        self.screen = Terminal()
+        self.screen = Terminal()  # TODO: rename it to terminal
         self.delay = delay
         term_size = get_terminal_size()
         self.size = {

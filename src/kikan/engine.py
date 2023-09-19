@@ -24,21 +24,25 @@ class Engine:
         self._terminate_hooks: list[Callable[[], None]] = []
         self.event_manager = EventManager(self)
         self.config = EngineConfig()
+        self.__is_running = True
         Logger.init()
 
     #! deprecated
-    def init(self) -> None:
+    def init(self):
         ...
 
-    def setup(self, config: EngineConfig) -> None:
+    def setup(self, config: EngineConfig):
         self.config = config
 
-    def start(self) -> None:
+    def start(self):
         get_key_delay = 1 / self.config.fps
         self.screen = Screen(get_key_delay)
         self._launch_loop_handler()
 
-    def load_world_map(self, world_map: WorldMap) -> None:
+    def stop(self):
+        self.__is_running = False
+
+    def load_world_map(self, world_map: WorldMap):
         self.game_world.map = world_map
 
     def _terminate(self):
@@ -87,7 +91,7 @@ class Engine:
         self.screen.update()
 
     def _launch_loop_handler(self) -> LaunchError:
-        while True:
+        while self.__is_running:
             try:
                 self.__do_tick()
                 sleep(1 / self.config.fps)
@@ -96,3 +100,4 @@ class Engine:
                 self.screen.terminate_terminal()
                 self._terminate()
                 raise LaunchError() from e
+        self._terminate()
