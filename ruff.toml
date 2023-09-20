@@ -1,0 +1,6 @@
+extend-select = ["D"]
+
+ignore = ["D1"]
+
+[pydocstyle]
+convention = "google" # TODO: replace with rest when releases

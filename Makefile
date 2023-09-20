@@ -17,3 +17,15 @@ build:
 
 publish:	
 	${PYTHON} -m twine upload dist/*
+
+test:
+	tox run -e test
+
+format:
+	tox run -e format
+
+lint:
+	tox run -e lint
+
+type:
+	tox run -e type

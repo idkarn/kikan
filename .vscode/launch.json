@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "python",
+      "request": "launch",
+      "name": "Run file",
+      "program": "${relativeFile}",
+      "justMyCode": true
+    }
+  ]
+}
