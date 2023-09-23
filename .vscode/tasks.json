@@ -6,7 +6,7 @@
       "type": "shell",
       "detail": "Runs general testing",
       "icon": {},
-      "command": "tox run -e test",
+      "command": "tox run -e py",
       "group": "test",
       "presentation": {
         "echo": true,

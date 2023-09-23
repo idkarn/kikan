@@ -19,7 +19,7 @@ publish:
 	${PYTHON} -m twine upload dist/*
 
 test:
-	tox run -e test
+	tox run -e py
 
 format:
 	tox run -e format
