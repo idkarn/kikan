@@ -4,13 +4,13 @@ from types import FunctionType
 from typing import Literal, TYPE_CHECKING, List, Any
 
 from kikan.utils import Logger
+
 if TYPE_CHECKING:
     from .entity import Entity
     from .engine import Engine
 
 
-EventType = Literal["init", "pre_update",
-                    "update", "trigger", "collision", "input"]
+EventType = Literal["init", "pre_update", "update", "trigger", "collision", "input"]
 EventContext = List[Any]
 
 
@@ -25,14 +25,14 @@ class EventManager:
 
     def handle_input(self):
         if pressed_key := self.engine.screen.get_key():
-            self.notify('input', [pressed_key])
+            self.notify("input", [pressed_key])
 
     def tick(self):
         dt = time() - self._previous_timestamp
-        self.notify('pre_update', [dt])
+        self.notify("pre_update", [dt])
         for entity in self.engine.game_world.entities.values():
             entity._update()
-        self.notify('update', [dt])
+        self.notify("update", [dt])
 
         self.handle_input()
 
