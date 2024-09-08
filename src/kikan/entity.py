@@ -5,6 +5,7 @@ from enum import Enum
 from typing import Generic, List, Tuple, TypeVar
 from .main import engine
 from .math import Vector
+from .states import StateManager
 
 
 RGBType = Tuple[int, int, int]
@@ -39,8 +40,11 @@ class Entity:
         self.__prev_timestamp: float = time.time()
 
         for attr_name in dir(self):
-            if "_subscribed_on" in dir(attr_value := getattr(self, attr_name)):
+            attrs = dir(attr_value := getattr(self, attr_name))
+            if "_subscribed_on" in attrs:
                 attr_value._subscribed_on.subscribe(attr_value)
+            if "_affected_by" in attrs:
+                StateManager.subscribe(attr_value._affected_by, attr_value)
 
     def _update(self):
         self.prev_pos = Vector(self.position.x, self.position.y)
@@ -114,7 +118,9 @@ class Texture:
 
 
 class Pixel(Generic[PositionType]):
-    def __init__(self, symbol: str, color: RGBType | None = None, position: PositionType = None):
+    def __init__(
+        self, symbol: str, color: RGBType | None = None, position: PositionType = None
+    ):
         if len(symbol) > 1:
             raise Exception("Only one character is allowed for pixel's symbol")
         self.symbol: str = symbol
