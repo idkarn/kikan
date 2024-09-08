@@ -56,6 +56,41 @@ TODO
 
 TODO
 
+### Entities communication
+
+There are two ways to implement this. Signals let you subscribe a function to some kind of event. When that event happens (signal emits), the subscribers are called. If you want something to contain payload then use states. State is a cell with value that you can update and affect functions that depend on this state.
+
+**States**
+
+```py
+hp = State(10) # you have to pass an initial value
+
+class StatManager(MetaEntity):
+  @hp.affects # subscribe the method to the state
+  def update_hearts():
+    render_hearts(hp.get()) # get the current value from the state
+
+hp.set(9) # change the current value
+```
+
+**Signals**
+
+```py
+on_hit = Signal() # define a signal in scope your entities can reach
+
+class Player(Entity):
+  @on_hit # use it as a decorator to mark subscribers
+  def dec_hp(self):
+    self.hp -= 1
+
+p = Player()
+
+class Enemy(Entity):
+  def on_collision(self, other):
+    if other is p:
+      on_hit.emit() # emit the signal to trigger subscribed functions
+```
+
 ## Development
 
 So you want to contibute to this package... Let's prepare environment:
