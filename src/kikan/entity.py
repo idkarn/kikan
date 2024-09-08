@@ -38,6 +38,10 @@ class Entity:
 
         self.__prev_timestamp: float = time.time()
 
+        for attr_name in dir(self):
+            if "_subscribed_on" in dir(attr_value := getattr(self, attr_name)):
+                attr_value._subscribed_on.subscribe(attr_value)
+
     def _update(self):
         self.prev_pos = Vector(self.position.x, self.position.y)
 
